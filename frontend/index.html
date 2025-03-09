@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Attendance System - Login</title>
+    <link rel="stylesheet" href="../frontend/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Login</h2>
+        <form id="login-form">
+            <input type="email" id="email" placeholder="Email" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <button type="submit">Login</button>
+        </form>
+        <p>Don't have an account? <a href="#" id="show-register">Register here</a></p>
+    </div>
+
+    <div class="container hidden" id="register-container">
+        <h2>Register</h2>
+        <form id="register-form">
+            <input type="email" id="register-email" placeholder="Email" required>
+            <input type="password" id="register-password" placeholder="Password" required>
+        
+            <label><input type="radio" name="role" value="user" checked> User</label>
+            <label><input type="radio" name="role" value="admin"> Admin</label>
+        
+            <button type="submit">Register</button>
+        </form>
+        
+        <p>Already have an account? <a href="#" id="show-login">Login here</a></p>
+    </div>
+
+    <script src="..//backend/js/script.js"></script>
+</body>
+</html>
