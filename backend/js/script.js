@@ -60,10 +60,12 @@ document.addEventListener("DOMContentLoaded", function () {
         if (response.ok) {
             if (data.role === "admin") {
                 window.location.href = "pages/admin.html"; 
+            } else if (data.role === "user") {
                 window.location.href = "pages/user.html"; 
             }
-        }        
+        }
     });
+    
     
     
 });
