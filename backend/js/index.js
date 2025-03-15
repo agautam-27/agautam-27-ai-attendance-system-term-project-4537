@@ -6,7 +6,6 @@ const auth = require("./config/firebase"); // Import Firebase setup
 const admin = require("firebase-admin");
 const db = admin.firestore(); // Initialize Firestore
 
-
 const app = express();
 
 // Middleware
@@ -48,8 +47,6 @@ app.post("/register", async (req, res) => {
     }
 });
 
-
-
 app.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -85,7 +82,6 @@ app.post("/login", async (req, res) => {
     }
 });
 
-
 app.get("/dashboard", async (req, res) => {
     try {
         const { email } = req.query; // Get email from request query
@@ -114,7 +110,6 @@ app.get("/dashboard", async (req, res) => {
         res.status(500).json({ message: "Error fetching user details." });
     }
 });
-
 
 // Start Server
 const PORT = process.env.PORT || 5000;
