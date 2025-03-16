@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
             statusMessage.textContent = "Scanning face...";
 
             try {
-                const response = await fetch("http://localhost:5001/detect", {
+                const response = await fetch("http://localhost:5002/detect", {
                     method: "POST",
                     body: formData
                 });

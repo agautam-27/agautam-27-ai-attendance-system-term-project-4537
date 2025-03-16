@@ -4,12 +4,11 @@ import cv2
 import numpy as np
 import firebase_admin
 from firebase_admin import credentials, firestore
+from ultralytics import YOLO
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app)
-
-from ultralytics import YOLO
+CORS(app, resources={r"/*": {"origins": "*"}})  # 🔹 Allow all frontend requests
 
 # Load the model 
 model = YOLO("yolov8n.pt")  
@@ -22,6 +21,9 @@ db = firestore.client()
 @app.route("/detect", methods=["POST"])
 def detect_faces():
     try:
+        if "image" not in request.files:
+            return jsonify({"error": "No image file found"}), 400
+
         file = request.files["image"]
         img = np.frombuffer(file.read(), np.uint8)
         img = cv2.imdecode(img, cv2.IMREAD_COLOR)
@@ -38,7 +40,7 @@ def detect_faces():
         return jsonify({"faces_detected": faces_detected})
 
     except Exception as e:
-        return jsonify({"error": str(e)})
+        return jsonify({"error": str(e)}), 500  # 🔹 Ensure proper error response
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5001)
+    app.run(debug=True, port=5002)  # 🔹 Change to port 5002
