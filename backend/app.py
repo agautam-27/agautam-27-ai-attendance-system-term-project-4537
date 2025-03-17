@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import cv2
@@ -43,4 +44,5 @@ def detect_faces():
         return jsonify({"error": str(e)}), 500  # 🔹 Ensure proper error response
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5002)  # 🔹 Change to port 5002
+    port = int(os.environ.get("PORT", 5000))  # fallback to 5000
+    app.run(host="0.0.0.0", port=port)
