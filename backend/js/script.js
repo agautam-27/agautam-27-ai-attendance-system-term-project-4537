@@ -24,7 +24,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const password = document.getElementById("register-password").value;
         const role = document.querySelector('input[name="role"]:checked').value; 
     
-        const response = await fetch("http://localhost:5001/register", {
+        const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/register", {
+
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -46,7 +47,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
     
-        const response = await fetch("http://localhost:5001/login", {
+        const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/login", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",

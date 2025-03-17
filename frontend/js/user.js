@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
             statusMessage.textContent = "Scanning face...";
 
             try {
-                const response = await fetch("http://localhost:5002/detect", {
+                const response = await fetch("https://agautam-27-ai-attendance-system-term.onrender.com/detect", {
                     method: "POST",
                     body: formData
                 });
