@@ -4,7 +4,7 @@ let serviceAccount;
 let auth = null; // Default to null
 
 try {
-    serviceAccount = require("../../database/serviceAccountKey.json"); // ✅ Corrected path
+    serviceAccount = require("../serviceAccountKey.json");
 
     // If the file exists, initialize Firebase
     admin.initializeApp({
