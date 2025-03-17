@@ -14,7 +14,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})  # 🔹 Allow all frontend reques
 model = YOLO("yolov8n.pt")  
 
 # Initialize Firebase
-cred = credentials.Certificate("database/serviceAccountKey.json")
+cred = credentials.Certificate("serviceAccountKey.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
