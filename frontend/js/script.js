@@ -99,12 +99,14 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const data = await response.json();
 
-        // After fetching the reset link
         if (response.ok) {
-            const linkEl = document.createElement("p");
-            linkEl.innerHTML = `Reset link (for demo): <a href="${data.link}" target="_blank">${data.link}</a>`;
-            document.getElementById("forgot-password-container").appendChild(linkEl);
+            // Show styled reset link instead of raw alert
+            const linkContainer = document.getElementById("reset-link-container");
+            const link = document.getElementById("reset-link");
+            link.href = data.link;
+            linkContainer.style.display = "block";
         }
+        
 
     });
 });
