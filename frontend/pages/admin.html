@@ -1,12 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
+
 <body>
-    <h2>Admin!</h2>
+    <h2>Admin Dashboard</h2>
+    <p id="status-message"></p>
+
+    <table id="stats-table" border="1" style="display: none;">
+        <thead>
+            <tr>
+                <th>Email</th>
+                <th>Role</th>
+                <th>API Usage</th>
+            </tr>
+        </thead>
+        <tbody id="stats-body"></tbody>
+    </table>
 </body>
+
+<script src="/js/admin.js"></script>
+
 </html>
