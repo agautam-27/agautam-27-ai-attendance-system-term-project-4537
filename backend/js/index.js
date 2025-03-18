@@ -189,7 +189,10 @@ app.post("/request-password-reset", async (req, res) => {
 
     // Simulate sending email (for bonus: display this on frontend)
     // const resetLink = `https://face-detection-attendance4537.netlify.app//frontend/pages/resetpassword.html?token=${token}&email=${email}`;
-    const resetLink = `https://face-detection-attendance4537.netlify.app/frontend/pages/resetpassword.html?token=${token}&email=${email}`;
+    // const resetLink = `https://face-detection-attendance4537.netlify.app/frontend/pages/resetpassword.html?token=${token}&email=${email}`;
+    // const resetLink = `https://face-detection-attendance4537.netlify.app/frontend/pages/resetpassword.html?token=${token}&email=${email}`;
+    const resetLink = `https://face-detection-attendance4537.netlify.app/resetpassword.html?token=${token}&email=${email}`;
+
     console.log("RESET LINK (Send via email):", resetLink);
 
     res.status(200).json({ message: "Reset link generated.", link: resetLink });
