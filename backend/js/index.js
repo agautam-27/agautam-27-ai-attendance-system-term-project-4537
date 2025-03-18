@@ -5,9 +5,13 @@ const cors = require("cors");
 const admin = require("firebase-admin");
 const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
 
+const crypto = require("crypto"); 
+
+
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
+const tokens = {}; 
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -158,6 +162,76 @@ app.get("/admin/stats", async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch admin stats." });
     }
+});
+
+
+// Route to handle forgot password and generate token
+app.post("/request-password-reset", async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ message: "Email is required." });
+    }
+
+    const userDoc = await db.collection("users").doc(email).get();
+    if (!userDoc.exists) {
+        return res.status(404).json({ message: "No account with that email exists." });
+    }
+
+    // Generate a random token
+    const token = crypto.randomBytes(20).toString("hex");
+
+    // Set token and expiry in Firestore
+    await db.collection("users").doc(email).update({
+        resetToken: token,
+        resetTokenExpiry: Date.now() + 3600000 // valid for 1 hour
+    });
+
+    // Simulate sending email (for bonus: display this on frontend)
+    // const resetLink = `https://face-detection-attendance4537.netlify.app//frontend/pages/resetpassword.html?token=${token}&email=${email}`;
+    const resetLink = `https://face-detection-attendance4537.netlify.app/frontend/pages/resetpassword.html?token=${token}&email=${email}`;
+    console.log("RESET LINK (Send via email):", resetLink);
+
+    res.status(200).json({ message: "Reset link generated.", link: resetLink });
+});
+
+app.post("/reset-password", async (req, res) => {
+    const { email, token, newPassword } = req.body;
+
+    if (!email || !token || !newPassword) {
+        return res.status(400).json({ message: "All fields are required." });
+    }
+
+    const userRef = db.collection("users").doc(email);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+        return res.status(404).json({ message: "User not found." });
+    }
+
+    const userData = userDoc.data();
+
+    // Check if token is valid and not expired
+    if (
+        !userData.resetToken ||
+        userData.resetToken !== token ||
+        !userData.resetTokenExpiry ||
+        Date.now() > userData.resetTokenExpiry
+    ) {
+        return res.status(400).json({ message: "Reset link is invalid or has expired." });
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password and remove the reset token fields
+    await userRef.update({
+        password: hashedPassword,
+        resetToken: admin.firestore.FieldValue.delete(),
+        resetTokenExpiry: admin.firestore.FieldValue.delete(),
+    });
+
+    res.status(200).json({ message: "Password has been successfully reset." });
 });
 
 
