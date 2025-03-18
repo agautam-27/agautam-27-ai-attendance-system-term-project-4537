@@ -60,11 +60,16 @@ document.addEventListener("DOMContentLoaded", function () {
         if (response.ok) {
             sessionStorage.setItem("email", email);
         
+            if (data.overQuota) {
+                alert("You've exceeded your free 20 API calls. Service will continue, but please be aware.");
+            }
+        
             if (data.role === "admin") {
                 window.location.href = "pages/admin.html"; 
             } else if (data.role === "user") {
                 window.location.href = "pages/user.html"; 
             }
-        }     
+        }
+         
     });
 });

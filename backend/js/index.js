@@ -88,7 +88,8 @@ app.post("/login", async (req, res) => {
             userId: email,
             email: userData.email,
             role: userData.role,
-            apiCount: (userData.apiCount || 0) + 1
+            apiCount: (userData.apiCount || 0) + 1,
+            overQuota: (userData.apiCount || 0) + 1 > 20
         });
         
 
