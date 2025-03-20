@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
             statusMessage.textContent = "Scanning face...";
 
             try {
-                const response = await fetch("https://9fcf-2001-569-598c-9500-2c5a-cb5c-5492-2a49.ngrok-free.app/detect", {
+                const response = await fetch(" https://0cce-2001-569-598c-9500-2c5a-cb5c-5492-2a49.ngrok-free.app/detect", {
                     method: "POST",
                     body: formData
                 });
