@@ -42,7 +42,7 @@ def detect_faces():
         return jsonify({"faces_detected": faces_detected})
 
     except Exception as e:
-        return jsonify({"error": str(e)}), 500  # 🔹 Ensure proper error response
+        return jsonify({"error": str(e)}), 500 
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  # fallback to 5000
