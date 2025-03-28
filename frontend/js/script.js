@@ -40,7 +40,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const password = document.getElementById("register-password").value;
         const role = document.querySelector('input[name="role"]:checked').value;
 
-        const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/register", {
+        // const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/register", {
+        const response = await fetch("http://localhost:5000/register", {
+
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password, role }),
@@ -62,7 +64,9 @@ document.addEventListener("DOMContentLoaded", function () {
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
 
-        const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/login", {
+        // const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/login", {
+        const response = await fetch("http://localhost:5000/login", {
+
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password }),
@@ -91,7 +95,9 @@ document.addEventListener("DOMContentLoaded", function () {
         e.preventDefault();
         const email = document.getElementById("reset-email").value;
 
-        const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/request-password-reset", {
+        // const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/request-password-reset", {
+        const response = await fetch("http://localhost:5000/request-password-reset", {
+
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email }),

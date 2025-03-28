@@ -12,7 +12,20 @@
     <h2>Admin Dashboard</h2>
     <p id="status-message"></p>
 
-    <table id="stats-table" border="1" style="display: none;">
+
+    <button id="show-stats-btn">Show API Usage Stats</button>
+    <button id="start-attendance-btn">Start Attendance Face Scan</button>
+
+    <div id="video-container" style="display: none;">
+        <video id="admin-video" autoplay></video>
+        <button id="capture-attendance-btn">Capture Face</button>
+        <canvas id="admin-canvas" style="display: none;"></canvas>
+        <p id="attendance-status"></p>
+    </div>
+
+
+
+    <table id="stats-table" border="1" style="display: none; margin-top: 10px;">
         <thead>
             <tr>
                 <th>Email</th>
@@ -22,8 +35,9 @@
         </thead>
         <tbody id="stats-body"></tbody>
     </table>
+
+    <script src="../js/admin.js"></script>
 </body>
 
-<script src="/js/admin.js"></script>
 
 </html>

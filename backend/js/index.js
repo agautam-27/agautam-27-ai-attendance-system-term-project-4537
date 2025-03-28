@@ -3,7 +3,13 @@ const express = require("express");
 const cors = require("cors");
 
 const admin = require("firebase-admin");
-const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
+
+//uncomment the line below when you push to github, so then it uses hosted services
+// const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
+
+
+// comment the line out below when u push, when testing locally keep it uncommented 
+const serviceAccount = require("../database/serviceAccountKey.json");
 
 const crypto = require("crypto"); 
 

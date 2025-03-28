@@ -15,40 +15,45 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    // Capture and send image for face detection
-    async function captureAndSendImage() {
-        const ctx = canvas.getContext("2d");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        canvas.toBlob(async (blob) => {
-            const formData = new FormData();
-            formData.append("image", blob, "face_scan.jpg");
+async function captureAndRegisterFace() {
+    const ctx = canvas.getContext("2d");
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-            statusMessage.textContent = "Scanning face...";
+    canvas.toBlob(async (blob) => {
+        const formData = new FormData();
+        formData.append("image", blob, "face.jpg");
 
-            try {
-                const response = await fetch("https://df53-142-232-152-19.ngrok-free.app/detect", {
-                    method: "POST",
-                    body: formData
-                });
+        // Add user email from session
+        const email = sessionStorage.getItem("email");
+        formData.append("email", email);
 
-                const data = await response.json();
+        statusMessage.textContent = "Registering your face...";
 
-                if (data.faces_detected.length > 0) {
-                    statusMessage.textContent = "Face detected!";
-                    console.log("Detected faces:", data.faces_detected);
-                } else {
-                    statusMessage.textContent = "No face detected. Try again.";
-                }
-            } catch (error) {
-                console.error("Error detecting face:", error);
-                statusMessage.textContent = "Error detecting face.";
+        try {
+            const response = await fetch("http://localhost:5001/register-face", {
+                method: "POST",
+                body: formData
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                statusMessage.textContent = "✅ Face registered!";
+            } else {
+                statusMessage.textContent = `❌ ${data.error}`;
             }
-        }, "image/jpeg");
-    }
+        } catch (error) {
+            console.error("Error registering face:", error);
+            statusMessage.textContent = "❌ Server error during registration.";
+        }
+    }, "image/jpeg");
+}
 
-    captureBtn.addEventListener("click", captureAndSendImage);
+
+    // captureBtn.addEventListener("click", captureAndSendImage);
+    captureBtn.addEventListener("click", captureAndRegisterFace);
+
     startWebcam();
 });
