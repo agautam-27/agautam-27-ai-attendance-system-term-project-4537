@@ -22,6 +22,8 @@ document.addEventListener("DOMContentLoaded", function () {
         e.preventDefault();
         const email = document.getElementById("register-email").value;
         const password = document.getElementById("register-password").value;
+        const name = document.getElementById("register-name").value; 
+        const studentId = document.getElementById("register-student-id").value;
         const role = document.querySelector('input[name="role"]:checked').value; 
     
         const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/register", {
@@ -30,7 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ email, password, role }),
+            body: JSON.stringify({ email, password, name, studentId, role }),
         });
     
         const data = await response.json();

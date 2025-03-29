@@ -9,7 +9,7 @@ const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
 
 
 // comment the line out below when u push, when testing locally keep it uncommented 
-// const serviceAccount = require("../database/serviceAccountKey.json");
+//const serviceAccount = require("../database/serviceAccountKey.json");
 
 const crypto = require("crypto"); 
 
@@ -39,13 +39,16 @@ app.get("/", (req, res) => {
 
 app.post("/register", async (req, res) => {
     try {
-        const { email, password, role } = req.body;
+        const { email, password, role, name, studentId } = req.body;
 
-        if (!email || !password || !role) {
-            return res.status(400).json({ message: "Email, password, and role are required." });
+        if (!email || !password || !role || !name) {
+            return res.status(400).json({ message: "Email, password, name and role are required." });
         }
 
-        
+        if (role === "user" && (!studentId)) {
+            return res.status(400).json({ message: "Student ID is required for user registration." });
+        }
+
         const userDoc = await db.collection("users").doc(email).get();
         if (userDoc.exists) {
             return res.status(400).json({ message: "User already exists." });
@@ -53,12 +56,19 @@ app.post("/register", async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        await db.collection("users").doc(email).set({
+        const userData = {
             email,
             password: hashedPassword,
             role,
-            apiCount: 0, 
-        });
+            apiCount: 0,
+            name: name
+        };
+
+        if (role === "user") {
+            userData.studentId = studentId;
+        }
+
+        await db.collection("users").doc(email).set(userData);
 
         res.status(201).json({ message: "User registered successfully!", userId: email });
     } catch (error) {

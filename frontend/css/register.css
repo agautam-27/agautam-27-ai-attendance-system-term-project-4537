@@ -1,0 +1,49 @@
+/* Register Page Specific Styles */
+#register-container {
+    width: 350px;
+    padding: 25px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+/* Improve input field spacing */
+#register-container input {
+    width: calc(100% - 20px);
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+/* Style the radio buttons */
+#register-container label {
+    display: inline-block;
+    margin: 10px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Customize the register button */
+#register-container button {
+    width: 100%;
+    padding: 12px;
+    background: #28a745;  /* Green for better differentiation */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#register-container button:hover {
+    background: #218838;
+}
+
+/* Hide student ID field when necessary */
+#student-id-field {
+    transition: 0.3s ease-in-out;
+}
