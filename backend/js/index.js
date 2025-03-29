@@ -5,11 +5,11 @@ const cors = require("cors");
 const admin = require("firebase-admin");
 
 //uncomment the line below when you push to github, so then it uses hosted services
-// const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
+const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
 
 
 // comment the line out below when u push, when testing locally keep it uncommented 
-const serviceAccount = require("../database/serviceAccountKey.json");
+// const serviceAccount = require("../database/serviceAccountKey.json");
 
 const crypto = require("crypto"); 
 
@@ -130,6 +130,7 @@ app.get("/dashboard", async (req, res) => {
             userId: email,
             email: userData.email,
             role: userData.role,
+            apiCount: userData.apiCount
         });
     } catch (error) {
         res.status(500).json({ message: "Error fetching user details." });

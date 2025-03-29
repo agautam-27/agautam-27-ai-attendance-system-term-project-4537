@@ -1,0 +1,74 @@
+/* Centering the content */
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #eef2f7;
+}
+
+/* Styling the dashboard title */
+h2 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+/* Styling the profile info */
+#profile-info {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 280px;
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+#profile-info p {
+    margin: 8px 0;
+    font-size: 16px;
+}
+
+/* Video container styling */
+#video-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 500px;
+}
+
+#video {
+    width: 100%;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+/* Styling the scan button */
+#capture-btn {
+    width: 100%;
+    padding: 10px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+#capture-btn:hover {
+    background: #218838;
+}
+
+/* Status message styling */
+#status-message {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #555;
+}
