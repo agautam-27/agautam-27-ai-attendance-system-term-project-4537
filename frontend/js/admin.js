@@ -1,4 +1,49 @@
+import jwtDecode from "https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.esm.js";
+
+/**
+ * Function to check if the JWT is expired
+ * @return {boolean} True if the token is expired, false otherwise
+ */
+
+function isTokenExpired(){
+    const token = getToken();
+    if(!token){
+        return true;
+    }
+    try{
+        const {exp} = jwtDecode(token); // decond token to get the expiration time
+        console.log("date time now: ", Date.now());
+        console.log("expiration time: ", exp );
+        const res = Date.now() >= exp*1000; // check if the token is expired
+        console.log("res: ", res);
+        return res;
+    } catch(error){
+        console.log("Error checking token expiration: ", error);
+        return true;
+    }
+}
+
+function checkTokenAndRedirect(){
+    // Check if the token is expired
+    if(isTokenExpired()){
+        console.log("enter checks")
+        localStorage.clear();
+        // will reload the page and redirect to the login page
+        window.location.href = "../index.html";
+    }
+}
+/**
+ * Function to get the JWT token from localStorage
+ * @return {string | null} The token if it exists, null otherwise
+ */
+function getToken(){
+    return localStorage.getItem('token');
+}
+
+
 document.addEventListener("DOMContentLoaded", async function () {
+    checkTokenAndRedirect(); // Check if the token is expired and redirect if necessary
+
     // DOM Elements
     const statsTable = document.getElementById("stats-table");
     const statsBody = document.getElementById("stats-body");
@@ -53,11 +98,25 @@ document.addEventListener("DOMContentLoaded", async function () {
     let mediaStream = null;
 
     // Check if admin is logged in
-    const adminEmail = sessionStorage.getItem("email");
-    if (!adminEmail) {
+    // const adminEmail = sessionStorage.getItem("email");
+    // if (!adminEmail) {
+    //     statusMessage.textContent = "Unauthorized. Please log in as admin.";
+    //     return;
+    // }
+
+    const token = getToken();
+    let adminEmail = null;
+
+    try{
+        const decoded = jwtDecode(token);
+        adminEmail = decoded?.email;
+        
+    } catch(error){ // if there is an error decoding the token->no email and redirect to login page
+        console.log("Error decoding token: ", error);
         statusMessage.textContent = "Unauthorized. Please log in as admin.";
         return;
     }
+
 
     // Event Listeners
     showStatsBtn.addEventListener("click", fetchAllStats);
@@ -85,7 +144,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     
     async function fetchAndDisplayUserStats() {
         try {
-            const response = await fetch(`http://localhost:5000/admin/stats?email=${adminEmail}`);
+            const response = await fetch(`http://localhost:5000/admin/stats?email=${adminEmail}`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                }
+            });
             const data = await response.json();
 
             if (!response.ok) {
@@ -119,7 +183,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     async function fetchAndDisplayApiStats() {
         try {
             refreshApiStatsBtn.disabled = true;
-            const response = await fetch(`http://localhost:5000/admin/api-stats?email=${adminEmail}`);
+            const response = await fetch(`http://localhost:5000/admin/api-stats?email=${adminEmail}`, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
             const data = await response.json();
 
             if (!response.ok) {

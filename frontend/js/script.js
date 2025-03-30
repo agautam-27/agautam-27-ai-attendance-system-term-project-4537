@@ -101,10 +101,12 @@ document.addEventListener("DOMContentLoaded", function () {
             });
 
             const data = await response.json();
-
+            console.log("Token before stored: ", data.token); // Log the token before storing
+            
             if (response.ok) {
-                sessionStorage.setItem("email", email);
-
+                localStorage.setItem("token", data.token); // Store the token in local storage
+                console.log("Token after stored in localStorage: ", data.token); // Log the token after storing
+                
                 if (data.role === "admin") {
                     window.location.href = "pages/admin.html";
                 } else {

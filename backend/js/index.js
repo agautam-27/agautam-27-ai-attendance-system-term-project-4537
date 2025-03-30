@@ -3,6 +3,10 @@ const express = require("express");
 const cors = require("cors");
 const sendResetEmail = require("./utils/sendEmail"); // Import the sendResetEmail function
 const admin = require("firebase-admin");
+const jwt = require("jsonwebtoken");
+const checkAuth = require("./utils/checkAuth"); // Import the checkAuth middleware for JWT authorization
+
+
 
 //uncomment the line below when you push to github, so then it uses hosted services
 // const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
@@ -17,6 +21,7 @@ const saltRounds = 10;
 
 const tokens = {}; 
 
+const JWT_SECRET = process.env.JWT_SECRET;
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
@@ -134,8 +139,12 @@ app.post("/login", async (req, res) => {
         await db.collection("users").doc(email).update({
             apiCount: admin.firestore.FieldValue.increment(1)
         });
+
+         // change expiration time to any time you want for testing        
+        const token = jwt.sign({email: email}, JWT_SECRET, {expiresIn: '60s'});
         
         res.status(200).json({
+            token: token,
             message: "Login successful!",
             userId: email,
             email: userData.email,
@@ -146,12 +155,13 @@ app.post("/login", async (req, res) => {
         
 
     } catch (error) {
+        console.log("Error in login in index.js: ", error);
         res.status(500).json({ message: "Error logging in." });
     }
 });
 
 
-app.get("/dashboard", async (req, res) => {
+app.get("/dashboard", checkAuth, async (req, res) => {
     try {
         const { email } = req.query;
 
@@ -178,7 +188,8 @@ app.get("/dashboard", async (req, res) => {
         res.status(500).json({ message: "Error fetching user details." });
     }
 });
-app.get("/admin/api-stats", async (req, res) => {
+
+app.get("/admin/api-stats", checkAuth, async (req, res) => {
     try {
         const { email } = req.query;
 
@@ -209,7 +220,7 @@ app.get("/admin/api-stats", async (req, res) => {
     }
 });
 
-app.get("/admin/stats", async (req, res) => {
+app.get("/admin/stats",  checkAuth, async (req, res) => {
     try {
         const { email } = req.query;
 
@@ -323,7 +334,7 @@ app.post("/reset-password", async (req, res) => {
     res.status(200).json({ message: "Password has been successfully reset." });
 });
 
-app.delete("/admin/delete-user", async (req, res) => {
+app.delete("/admin/delete-user", checkAuth, async (req, res) => {
     try {
         const { adminEmail, userEmail } = req.body;
 
@@ -348,7 +359,7 @@ app.delete("/admin/delete-user", async (req, res) => {
     }
 });
 
-app.patch("/admin/update-role", async (req, res) => {
+app.patch("/admin/update-role",  checkAuth, async (req, res) => {
     try {
         const { adminEmail, userEmail } = req.body;
 
