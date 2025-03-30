@@ -1,3 +1,5 @@
+import messages from "../messages/lang/en.js";
+
 document.addEventListener("DOMContentLoaded", async function () {
     // DOM Elements
     const statsTable = document.getElementById("stats-table");
@@ -55,7 +57,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Check if admin is logged in
     const adminEmail = sessionStorage.getItem("email");
     if (!adminEmail) {
-        statusMessage.textContent = "Unauthorized. Please log in as admin.";
+        statusMessage.textContent = messages.unauthorized;
         return;
     }
 
@@ -76,7 +78,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         try {
             await fetchAndDisplayUserStats();
         } catch (error) {
-            statusMessage.textContent = "Error fetching user data.";
+            statusMessage.textContent = messages.errorFetchingData;
             console.error("Fetch error:", error);
         } finally {
             showStatsBtn.disabled = false;
@@ -102,11 +104,26 @@ document.addEventListener("DOMContentLoaded", async function () {
                     <td>${user.token || 'N/A'}</td>
                     <td>${user.apiCount}</td>
                     <td>
-                        ${user.role === "user" ? `<button onclick="updateUserRole('${user.email}')">Make Admin</button>` : ""}
-                        <button onclick="deleteUser('${user.email}')">Delete</button>
+                        ${user.role === "user" ? `<button class="update-role-btn" data-email="${user.email}">Make Admin</button>` : ""}
+                        <button class="delete-user-btn" data-email="${user.email}">Delete</button>
                     </td>
                 `;
                 statsBody.appendChild(row);
+            });
+
+            // Add event listeners to the buttons after the table is populated
+            document.querySelectorAll('.update-role-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const userEmail = e.target.getAttribute('data-email');
+                    updateUserRole(userEmail);
+                });
+            });
+
+            document.querySelectorAll('.delete-user-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const userEmail = e.target.getAttribute('data-email');
+                    deleteUser(userEmail);
+                });
             });
 
             statsTable.classList.remove("hidden");
@@ -162,12 +179,12 @@ document.addEventListener("DOMContentLoaded", async function () {
             video.srcObject = stream;
             mediaStream = stream;
             videoContainer.classList.remove("hidden");
-            statusText.textContent = "Webcam started. Ready to capture.";
+            statusText.textContent = messages.webcamStarted;
             
             // Show/hide buttons
             startAttendanceBtn.style.display = "none";
         } catch (err) {
-            statusText.textContent = "Failed to access webcam.";
+            statusText.textContent = messages.failedWebcamAccess;
             console.error(err);
         }
     }
@@ -223,7 +240,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 if (response.ok) {
                     // Display total faces detected
                     const facesDetectedText = document.createElement("p");
-                    facesDetectedText.textContent = `Faces detected: ${data.total_faces_detected || 0}`;
+                    facesDetectedText.textContent = messages.facesDetected + (data.total_faces_detected || 0);
                     attendanceResults.appendChild(facesDetectedText);
                     
                     if (data.match && data.matched_users && data.matched_users.length > 0) {
@@ -264,10 +281,10 @@ document.addEventListener("DOMContentLoaded", async function () {
                         statusText.textContent = `Marked ${data.matched_users.length} student(s) present!`;
                     } else {
                         if (data.total_faces_detected > 0) {
-                            statusText.textContent = "Faces detected but no registered students found.";
+                            statusText.textContent = messages.noRegisteredStudents;
                         } else {
-                            statusText.textContent = "No faces detected in the image.";
-                        }
+                            statusText.textContent = messages.noFacesDetected;
+                        }                        
                     }
                 } else {
                     statusText.textContent = data.error || "Error during attendance check.";
@@ -292,7 +309,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 async function deleteUser(userEmail) {
     const adminEmail = sessionStorage.getItem("email");
 
-    if (!confirm(`Are you sure you want to delete ${userEmail}?`)) return;
+    if (!confirm(messages.confirmDeleteUser.replace("{email}", userEmail))) return;
 
     try {
         const response = await fetch("http://localhost:5000/admin/delete-user", {
@@ -313,7 +330,7 @@ async function deleteUser(userEmail) {
 async function updateUserRole(userEmail) {
     const adminEmail = sessionStorage.getItem("email");
 
-    if (!confirm(`Are you sure you want to make ${userEmail} an admin?`)) return;
+    if (!confirm(messages.confirmMakeAdmin.replace("{email}", userEmail))) return;
 
     try {
         const response = await fetch("http://localhost:5000/admin/update-role", {

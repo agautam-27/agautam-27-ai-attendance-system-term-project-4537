@@ -1,3 +1,5 @@
+import messages from "../messages/lang/en.js";
+
 document.addEventListener("DOMContentLoaded", () => {
     //the link in email contains the token and email as query parameters
     const params = new URLSearchParams(window.location.search);
@@ -5,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const email = params.get("email");
 
     if (!token || !email) {
-        document.body.innerHTML = "<p>Invalid reset link.</p>";
+        document.body.innerHTML = `<p>${messages.invalidResetLink}</p>`;
         return;
     }
 
@@ -29,14 +31,14 @@ document.addEventListener("DOMContentLoaded", () => {
             const data = await response.json();
 
             if (response.ok) {
-                alert("Password reset successful! Redirecting to login...");
+                alert(messages.passwordResetSuccess);
                 window.location.href = "../index.html";
             } else {
-                alert(`❌ ${data.message || "Reset failed."}`);
+                alert(`❌ ${data.message || messages.resetFailed}`);
             }
         } catch (err) {
             console.error("Reset error:", err);
-            alert("❌ Something went wrong. Try again later.");
+            alert(messages.resetError);
         }
     });
 });

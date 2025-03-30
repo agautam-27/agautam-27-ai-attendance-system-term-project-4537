@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const sendResetEmail = require("./utils/sendEmail"); // Import the sendResetEmail function
 const admin = require("firebase-admin");
+const messages = require("../messages/lang/en");
 
 //uncomment the line below when you push to github, so then it uses hosted services
 // const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
@@ -74,16 +75,16 @@ app.post("/register", async (req, res) => {
         const { email, password, role, name, studentId } = req.body;
 
         if (!email || !password || !role || !name) {
-            return res.status(400).json({ message: "Email, password, name and role are required." });
+            return res.status(400).json({ message: messages.requiredFields });
         }
 
         if (role === "user" && (!studentId)) {
-            return res.status(400).json({ message: "Student ID is required for user registration." });
+            return res.status(400).json({ message: messages.studentIdRequired });
         }
 
         const userDoc = await db.collection("users").doc(email).get();
         if (userDoc.exists) {
-            return res.status(400).json({ message: "User already exists." });
+            return res.status(400).json({ message: messages.userAlreadyExists });
         }
 
         const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -113,12 +114,12 @@ app.post("/login", async (req, res) => {
         const { email, password } = req.body;
 
         if (!email || !password) {
-            return res.status(400).json({ message: "Email and password are required." });
+            return res.status(400).json({ message: messages.requiredFieldsLogin });
         }
 
         const userDoc = await db.collection("users").doc(email).get();
         if (!userDoc.exists) {
-            return res.status(404).json({ message: "User not found." });
+            return res.status(404).json({ message: messages.userNotFound });
         }
         
         const userData = userDoc.data(); 
@@ -127,7 +128,7 @@ app.post("/login", async (req, res) => {
         
 
         if (!isMatch) {
-            return res.status(401).json({ message: "Invalid password." });
+            return res.status(401).json({ message: messages.invalidPassword });
         }
         
         // Increment API count
@@ -136,7 +137,7 @@ app.post("/login", async (req, res) => {
         });
         
         res.status(200).json({
-            message: "Login successful!",
+            message: messages.loginSuccess,
             userId: email,
             email: userData.email,
             role: userData.role,
@@ -146,7 +147,7 @@ app.post("/login", async (req, res) => {
         
 
     } catch (error) {
-        res.status(500).json({ message: "Error logging in." });
+        res.status(500).json({ message: messages.errorLoggingIn });
     }
 });
 
@@ -156,12 +157,12 @@ app.get("/dashboard", async (req, res) => {
         const { email } = req.query;
 
         if (!email) {
-            return res.status(400).json({ message: "Email is required." });
+            return res.status(400).json({ message: messages.emailRequired });
         }
 
         const userDoc = await db.collection("users").doc(email).get();
         if (!userDoc.exists) {
-            return res.status(404).json({ message: "User not found." });
+            return res.status(404).json({ message: messages.userNotFound });
         }
 
         const userData = userDoc.data();
@@ -175,7 +176,7 @@ app.get("/dashboard", async (req, res) => {
             apiCount: userData.apiCount
         });
     } catch (error) {
-        res.status(500).json({ message: "Error fetching user details." });
+        res.status(500).json({ message: messages.errorUserDetails });
     }
 });
 app.get("/admin/api-stats", async (req, res) => {
@@ -185,12 +186,12 @@ app.get("/admin/api-stats", async (req, res) => {
         // Check if user is admin
         const adminDoc = await db.collection("users").doc(email).get();
         if (!adminDoc.exists) {
-            return res.status(404).json({ message: "Admin user not found." });
+            return res.status(404).json({ message: messages.adminUserNotFound });
         }
 
         const adminData = adminDoc.data();
         if (adminData.role !== "admin") {
-            return res.status(403).json({ message: "Access denied. Admins only." });
+            return res.status(403).json({ message: messages.unauthorizedAdmin });
         }
 
         // Format the endpoint stats for display
@@ -205,7 +206,7 @@ app.get("/admin/api-stats", async (req, res) => {
 
         res.status(200).json({ endpoints: endpointStats });
     } catch (error) {
-        res.status(500).json({ message: "Failed to fetch API stats." });
+        res.status(500).json({ message: messages.apiStatsFail });
     }
 });
 
@@ -216,12 +217,12 @@ app.get("/admin/stats", async (req, res) => {
         // Check if user is admin
         const adminDoc = await db.collection("users").doc(email).get();
         if (!adminDoc.exists) {
-            return res.status(404).json({ message: "Admin user not found." });
+            return res.status(404).json({ message: messages.adminUserNotFound});
         }
 
         const adminData = adminDoc.data();
         if (adminData.role !== "admin") {
-            return res.status(403).json({ message: "Access denied. Admins only." });
+            return res.status(403).json({ message: messages.unauthorizedAdmin });
         }
 
         // Fetch all users
@@ -241,7 +242,7 @@ app.get("/admin/stats", async (req, res) => {
 
         res.status(200).json({ users: usageData });
     } catch (error) {
-        res.status(500).json({ message: "Failed to fetch admin stats." });
+        res.status(500).json({ message: messages.failedToFetchAdminStats });
     }
 });
 
@@ -251,12 +252,12 @@ app.post("/request-password-reset", async (req, res) => {
     const { email } = req.body;
 
     if (!email) {
-        return res.status(400).json({ message: "Email is required." });
+        return res.status(400).json({ message: messages.emailRequired });
     }
 
     const userDoc = await db.collection("users").doc(email).get();
     if (!userDoc.exists) {
-        return res.status(404).json({ message: "No account with that email exists." });
+        return res.status(404).json({ message: messages.noEmailExists });
     }
 
     // Generate a random token
@@ -278,9 +279,9 @@ app.post("/request-password-reset", async (req, res) => {
 
     const emailResponse = await sendResetEmail(email, resetLink);
     if(emailResponse.success){
-        return res.status(200).json({ message: "Password reset email sent successfully." });
+        return res.status(200).json({ message: messages.passwordEmailSent });
     } else{
-        return res.status(500).json({ message: "Error sending email." });
+        return res.status(500).json({ message: messages.errorSendingEmail });
     }
 });
 
@@ -288,14 +289,14 @@ app.post("/reset-password", async (req, res) => {
     const { email, token, newPassword } = req.body;
 
     if (!email || !token || !newPassword) {
-        return res.status(400).json({ message: "All fields are required." });
+        return res.status(400).json({ message: messages.allFieldsRequired });
     }
 
     const userRef = db.collection("users").doc(email);
     const userDoc = await userRef.get();
 
     if (!userDoc.exists) {
-        return res.status(404).json({ message: "User not found." });
+        return res.status(404).json({ message: messages.userNotFound });
     }
 
     const userData = userDoc.data();
@@ -307,7 +308,7 @@ app.post("/reset-password", async (req, res) => {
         !userData.resetTokenExpiry ||
         Date.now() > userData.resetTokenExpiry
     ) {
-        return res.status(400).json({ message: "Reset link is invalid or has expired." });
+        return res.status(400).json({ message: messages.invalidResetLink });
     }
 
     // Hash the new password
@@ -320,7 +321,7 @@ app.post("/reset-password", async (req, res) => {
         resetTokenExpiry: admin.firestore.FieldValue.delete(),
     });
 
-    res.status(200).json({ message: "Password has been successfully reset." });
+    res.status(200).json({ message: messages.passwordResetSuccess });
 });
 
 app.delete("/admin/delete-user", async (req, res) => {
@@ -330,21 +331,21 @@ app.delete("/admin/delete-user", async (req, res) => {
         // Verify admin
         const adminDoc = await db.collection("users").doc(adminEmail).get();
         if (!adminDoc.exists || adminDoc.data().role !== "admin") {
-            return res.status(403).json({ message: "Unauthorized. Admins only." });
+            return res.status(403).json({ message: messages.unauthorizedAdmin });
         }
 
         // Check if user exists
         const userDoc = await db.collection("users").doc(userEmail).get();
         if (!userDoc.exists) {
-            return res.status(404).json({ message: "User not found." });
+            return res.status(404).json({ message: messages.userNotFound });
         }
 
         // Delete user
         await db.collection("users").doc(userEmail).delete();
-        res.status(200).json({ message: `User ${userEmail} deleted successfully.` });
+        res.status(200).json({ message: messages.userDeleted(userEmail) });
 
     } catch (error) {
-        res.status(500).json({ message: "Error deleting user.", error: error.message });
+        res.status(500).json({ message: messages.errorDeletingUser, error: error.message });
     }
 });
 
@@ -355,21 +356,21 @@ app.patch("/admin/update-role", async (req, res) => {
         // Verify admin
         const adminDoc = await db.collection("users").doc(adminEmail).get();
         if (!adminDoc.exists || adminDoc.data().role !== "admin") {
-            return res.status(403).json({ message: "Unauthorized. Admins only." });
+            return res.status(403).json({ message: messages.unauthorizedAdmin });
         }
 
         // Check if user exists
         const userDoc = await db.collection("users").doc(userEmail).get();
         if (!userDoc.exists) {
-            return res.status(404).json({ message: "User not found." });
+            return res.status(404).json({ message: messages.userNotFound });
         }
 
         // Update role
         await db.collection("users").doc(userEmail).update({ role: "admin" });
-        res.status(200).json({ message: `User ${userEmail} is now an admin.` });
+        res.status(200).json({ message: messages.userUpdatedToAdmin(userEmail) });
 
     } catch (error) {
-        res.status(500).json({ message: "Error updating role.", error: error.message });
+        res.status(500).json({ message: messages.errorUpdatingRole, error: error.message });
     }
 });
 
