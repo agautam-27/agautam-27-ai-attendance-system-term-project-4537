@@ -1,4 +1,5 @@
 import jwtDecode from "https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.esm.js";
+import messages from "../messages/lang/en.js";
 
 /**
  * Function to check if the JWT is expired
@@ -39,7 +40,6 @@ function checkTokenAndRedirect(){
 function getToken(){
     return localStorage.getItem('token');
 }
-
 
 document.addEventListener("DOMContentLoaded", async function () {
     checkTokenAndRedirect(); // Check if the token is expired and redirect if necessary
@@ -98,8 +98,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (response.ok) {
             apiCountElement.textContent = data.apiCount || 0;
         } else {
-            apiCountElement.textContent = "Error fetching data";
-            console.error("Error fetching API count:", data.message);
+            aapiCountElement.textContent = messages.apiCountError;
+            console.error(messages.apiCountError, data.message);            
         }
     } catch (error) {
         console.error("Failed to fetch API count:", error);
@@ -121,12 +121,12 @@ document.addEventListener("DOMContentLoaded", async function () {
             video.srcObject = stream;
             mediaStream = stream;
             videoContainer.classList.remove("hidden");
-            setStatusMessage("Camera started. Ready to register your face.", "info");
+            setStatusMessage(messages.cameraStarted, "info");
             
             // Show/hide buttons
             startCameraBtn.style.display = "none";
         } catch (err) {
-            setStatusMessage("Failed to access webcam. Please check permissions.", "error");
+            setStatusMessage(messages.failedWebcamAccess, "error");
             console.error(err);
         }
     }
@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     async function captureAndRegisterFace() {
         if (!mediaStream) {
-            setStatusMessage("Camera is not running. Please start the camera first.", "error");
+            setStatusMessage(messages.cameraNotRunning, "error");
             return;
         }
         
@@ -168,7 +168,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             formData.append("image", blob, "face.jpg");
             formData.append("email", email);
     
-            setStatusMessage("Registering your face...", "info");
+            setStatusMessage(messages.registeringFace, "info");
     
             try {
                 const response = await fetch("http://localhost:5001/register-face", {
@@ -178,7 +178,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     
                 const data = await response.json();
                 if (response.ok) {
-                    setStatusMessage("✅ Face registered successfully!", "success");
+                    setStatusMessage(messages.faceRegistered, "success");
                     // Update API count display after successful face registration
                     updateApiCountDisplay();
                 } else {
@@ -186,7 +186,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 }
             } catch (error) {
                 console.error("Error registering face:", error);
-                setStatusMessage("❌ Server error during registration.", "error");
+                setStatusMessage(messages.faceRegistrationError, "error");
             }
         }, "image/jpeg");
     }
@@ -223,7 +223,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                     console.error("Error fetching updated API count:", data.message);
                 }
             } catch (error) {
-                console.error("Failed to update API count:", error);
+                console.error(messages.apiCountUpdateError, error);
             }
         }
 });

@@ -1,3 +1,5 @@
+import messages from "../messages/lang/en.js";
+
 document.addEventListener("DOMContentLoaded", function () {
     const loginContainer = document.querySelector(".container");
     const registerContainer = document.getElementById("register-container");
@@ -67,14 +69,14 @@ document.addEventListener("DOMContentLoaded", function () {
             if (response.ok) {
                 registerContainer.classList.add("hidden");
                 loginContainer.classList.remove("hidden");
-                alert("Registration successful! Please log in.");
+                alert(messages.registrationSuccess);
             } else {
-                registerError.textContent = data.message || "Registration failed.";
+                registerError.textContent = data.message || messages.registrationFailed;
                 registerError.style.display = "block";
                 console.error(data.message || "Registration failed.");
             }
         } catch (error) {
-            registerError.textContent = "Connection error. Please try again later.";
+            registerError.textContent = messages.connectionError;
             registerError.style.display = "block";
             console.error("Registration error:", error);
         }
@@ -111,17 +113,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     window.location.href = "pages/admin.html";
                 } else {
                     if (data.overQuota) {
-                        alert("You've exceeded your free 20 API calls. Service will continue, but please be aware.");
+                        alert(messages.exceededQuota);
                     }
                     window.location.href = "pages/user.html";
                 }
             } else {
-                loginError.textContent = data.message || "Login failed. Please check your credentials.";
+                loginError.textContent = data.message || messages.loginFailed;
                 loginError.style.display = "block";
                 console.error(data.message || "Login failed.");
             }
         } catch (error) {
-            loginError.textContent = "Connection error. Please try again later.";
+            loginError.textContent = messages.connectionError;
             loginError.style.display = "block";
             console.error("Login error:", error);
         }
@@ -149,13 +151,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (response.ok) {
                 // Show success message
-                alert("Password reset email sent! Please check your inbox.");
+                alert(messages.resetEmailSent);
             } else {
-                resetError.textContent = data.message || "Failed to send reset email.";
+                resetError.textContent = data.message || messages.resetEmailFailed;
                 resetError.style.display = "block";
             }
         } catch (error) {
-            resetError.textContent = "Connection error. Please try again later.";
+            resetError.textContent = messages.connectionError;
             resetError.style.display = "block";
             console.error("Reset error:", error);
         }
