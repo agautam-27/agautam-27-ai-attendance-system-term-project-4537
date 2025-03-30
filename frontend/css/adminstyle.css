@@ -14,85 +14,138 @@ body {
     background: white;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 80%;
-    max-width: 800px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+    width: 90%;
+    max-width: 1000px;
     text-align: center;
     margin-top: 20px; 
-    position: relative; /* For absolute positioning of logout button */
+    margin-bottom: 20px;
 }
 
 .admin-header {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    position: relative;
     margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
 }
 
 h2 {
-    margin-bottom: 15px;
+    margin: 0;
+    color: #4a5568;
+    font-weight: 600;
+}
+
+h3 {
+    color: #4a5568;
+    margin-top: 0;
+    text-align: left;
+    padding-left: 5px;
+    border-left: 4px solid #63b3ed;
+    font-weight: 500;
 }
 
 p#status-message {
-    color: red;
-    font-weight: bold;
+    color: #e53e3e;
+    font-weight: 500;
+}
+
+/* Tab Navigation */
+.admin-tabs {
+    display: flex;
+    justify-content: center;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    margin: 0 5px;
+    cursor: pointer;
+    font-size: 16px;
+    color: #718096;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    color: #4299e1;
+}
+
+.tab-btn.active {
+    color: #3182ce;
+    border-bottom: 3px solid #3182ce;
+    font-weight: 500;
+}
+
+.tab-content {
+    padding: 15px;
+    background: #fafafa;
+    border-radius: 8px;
+    margin-top: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .button-group {
-    margin: 10px 0;
+    margin: 10px 0 20px 0;
+    text-align: left;
 }
 
 button {
-    padding: 10px 15px;
-    background: #007BFF;
+    padding: 8px 14px;
+    background: #4299e1;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     margin: 5px;
-    transition: 0.3s ease;
+    transition: 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 button:hover {
-    background: #0056b3;
+    background: #3182ce;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .logout-btn {
-    background-color: #dc3545;
-    position: absolute;
-    right: 0;
-    top: 0;
+    background-color: #fc8181;
     padding: 7px 12px;
     font-size: 14px;
 }
 
 .logout-btn:hover {
-    background-color: #c82333;
+    background-color: #f56565;
 }
 
 .stop-btn {
-    background-color: #dc3545;
+    background-color: #fc8181;
 }
 
 .stop-btn:hover {
-    background-color: #c82333;
+    background-color: #f56565;
 }
 
 .video-box {
     margin-top: 15px;
-    padding: 10px;
-    border: 1px solid #ddd;
+    padding: 15px;
+    border: 1px solid #e2e8f0;
     border-radius: 8px;
     background: #fff;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .video-controls {
     display: flex;
     justify-content: center;
     gap: 10px;
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
 video {
@@ -101,43 +154,68 @@ video {
     margin: 0 auto;
     border-radius: 8px;
     object-fit: cover;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+}
+
+.table-container {
+    margin-top: 15px;
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 table {
     width: 100%;
-    margin-top: 20px; 
     border-collapse: collapse;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-}
-
-.table-container {
-    width: 100%;
-    overflow-x: auto;
 }
 
 th, td {
-    border: 1px solid #ddd;
+    border: 1px solid #e2e8f0;
     padding: 10px;
     text-align: center;
 }
 
 th {
-    background-color: #007BFF;
+    background-color: #63b3ed;
     color: white;
     position: sticky;
     top: 0;  
     z-index: 1;
+    font-weight: 500;
 }
 
 td button {
-    background: #dc3545;
+    background: #fc8181;
     padding: 5px 10px;
     font-size: 0.9em;
     margin: 2px;
 }
 
 td button:hover {
-    background: #c82333;
+    background: #f56565;
+}
+
+/* Action buttons in tables */
+td button {
+    background: #fc8181;
+    padding: 5px 10px;
+    font-size: 0.9em;
+    margin: 2px;
+    border-radius: 4px;
+}
+
+td button:hover {
+    background: #f56565;
+}
+
+/* Make admin button should be different color */
+td button:first-child {
+    background: #4299e1;
+}
+
+td button:first-child:hover {
+    background: #3182ce;
 }
 
 .hidden {
@@ -153,13 +231,13 @@ td button:hover {
 
 .attendance-table th, 
 .attendance-table td {
-    border: 1px solid #ddd;
+    border: 1px solid #e2e8f0;
     padding: 8px;
     text-align: left;
 }
 
 .attendance-table th {
-    background-color: #007BFF;
+    background-color: #63b3ed;
     color: white;
 }
 
@@ -167,6 +245,10 @@ td button:hover {
     margin-top: 15px;
     width: 100%;
     overflow-x: auto;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 @media (max-width: 768px) {
@@ -174,12 +256,14 @@ td button:hover {
         width: 95%;
     }
     
-    .admin-header {
+    .admin-tabs {
         flex-direction: column;
+        align-items: center;
     }
     
-    .logout-btn {
-        position: static;
-        margin-top: 10px;
+    .tab-btn {
+        width: 100%;
+        margin: 2px 0;
+        text-align: center;
     }
 }

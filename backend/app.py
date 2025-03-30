@@ -171,11 +171,17 @@ def register_face():
         db.collection("face_encodings").document(email).set({
             "encoding": encodings[0].tolist()  # convert NumPy array to list
         })
+        
+        # Update API count after successful face registration
+        db.collection("users").document(email).update({
+            "apiCount": firestore.Increment(1)
+        })
 
         return jsonify({"message": "Face registered successfully!"})
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/verify-face", methods=["POST"])
 @swag_from({
@@ -281,6 +287,11 @@ def verify_face():
                             name = user_data.get("name", "Unknown")
                             student_id = user_data.get("studentId", "")
                             print(f"Found user data: {user_data}")
+                            
+                            # Update API count for this user
+                            db.collection("users").document(email).update({
+                                "apiCount": firestore.Increment(1)
+                            })
                         else:
                             print(f"User document not found for email: {email}")
                             # As a fallback, try querying by email field
@@ -291,6 +302,12 @@ def verify_face():
                                 name = user_data.get("name", "Unknown")
                                 student_id = user_data.get("studentId", "")
                                 print(f"Found user data via query: {user_data}")
+                                
+                                # Update API count for this user
+                                query_doc = user_query[0].reference
+                                query_doc.update({
+                                    "apiCount": firestore.Increment(1)
+                                })
                             else:
                                 print(f"User not found via query for email: {email}")
                                 name = email  # Use email as fallback
@@ -347,7 +364,7 @@ def verify_face():
     except Exception as e:
         print(f"Error in verify_face: {e}")
         return jsonify({"error": str(e)}), 500
-
+    
 
 @app.route("/check-attendance", methods=["POST"])
 @swag_from({

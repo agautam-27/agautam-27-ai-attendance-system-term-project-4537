@@ -102,23 +102,25 @@ document.addEventListener("DOMContentLoaded", async function () {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
+    
         canvas.toBlob(async (blob) => {
             const formData = new FormData();
             formData.append("image", blob, "face.jpg");
             formData.append("email", email);
-
+    
             setStatusMessage("Registering your face...", "info");
-
+    
             try {
                 const response = await fetch("http://localhost:5001/register-face", {
                     method: "POST",
                     body: formData
                 });
-
+    
                 const data = await response.json();
                 if (response.ok) {
                     setStatusMessage("✅ Face registered successfully!", "success");
+                    // Update API count display after successful face registration
+                    updateApiCountDisplay();
                 } else {
                     setStatusMessage(`❌ ${data.error}`, "error");
                 }
@@ -148,4 +150,21 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Redirect to login page
         window.location.href = "../index.html";
     }
+
+        // Add the new function here, inside the DOMContentLoaded block
+        async function updateApiCountDisplay() {
+            try {
+                const response = await fetch(`http://localhost:5000/dashboard?email=${email}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    apiCountElement.textContent = data.apiCount || 0;
+                } else {
+                    console.error("Error fetching updated API count:", data.message);
+                }
+            } catch (error) {
+                console.error("Failed to update API count:", error);
+            }
+        }
 });
+

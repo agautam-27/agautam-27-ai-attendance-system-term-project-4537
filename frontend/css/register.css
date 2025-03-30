@@ -3,19 +3,28 @@
     width: 350px;
     padding: 25px;
     background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
     text-align: center;
 }
 
 /* Improve input field spacing */
-#register-container input {
-    width: calc(100% - 20px);
+#register-container input[type="email"],
+#register-container input[type="password"],
+#register-container input[type="text"] {
+    width: calc(100% - 24px);
     padding: 12px;
     margin: 8px 0;
-    border: 1px solid #aaa;
+    border: 1px solid #e2e8f0;
     border-radius: 6px;
-    font-size: 16px;
+    font-size: 14px;
+    transition: border 0.2s ease;
+}
+
+#register-container input:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
 }
 
 /* Style the radio buttons */
@@ -24,26 +33,47 @@
     margin: 10px;
     font-size: 14px;
     cursor: pointer;
+    color: #4a5568;
+}
+
+#register-container input[type="radio"] {
+    margin-right: 5px;
+    cursor: pointer;
 }
 
 /* Customize the register button */
 #register-container button {
     width: 100%;
     padding: 12px;
-    background: #28a745;  /* Green for better differentiation */
+    background: #4299e1;  /* Blue to match theme */
     color: white;
     border: none;
     border-radius: 6px;
     font-size: 16px;
+    font-weight: 500;
     cursor: pointer;
-    transition: 0.3s;
+    transition: 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
 }
 
 #register-container button:hover {
-    background: #218838;
+    background: #3182ce;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Hide student ID field when necessary */
 #student-id-field {
     transition: 0.3s ease-in-out;
+}
+
+/* Role selection container */
+.role-selection {
+    display: flex;
+    justify-content: center;
+    margin: 15px 0;
+    padding: 5px 10px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
 }

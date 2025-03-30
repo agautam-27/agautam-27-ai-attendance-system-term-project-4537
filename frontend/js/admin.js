@@ -13,6 +13,34 @@ document.addEventListener("DOMContentLoaded", async function () {
     const statusText = document.getElementById("attendance-status");
     const logoutBtn = document.getElementById("logout-btn");
     
+    // New DOM Elements for API stats
+    const apiStatsTable = document.getElementById("api-stats-table");
+    const apiStatsBody = document.getElementById("api-stats-body");
+
+    // Tab navigation
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const refreshApiStatsBtn = document.getElementById("refresh-api-stats-btn");
+
+    // Set up tab navigation
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            // Remove active class from all buttons and hide all content
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.add('hidden'));
+            
+            // Add active class to clicked button and show corresponding content
+            button.classList.add('active');
+            const tabId = button.getAttribute('data-tab');
+            document.getElementById(`${tabId}-content`).classList.remove('hidden');
+            
+            // If switching to API stats tab, refresh the data
+            if (tabId === 'api-stats') {
+                fetchAndDisplayApiStats();
+            }
+        });
+    });
+    
     // Create attendance results container if it doesn't exist
     let attendanceResults = document.getElementById("attendance-results");
     if (!attendanceResults) {
@@ -32,22 +60,36 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 
     // Event Listeners
-    showStatsBtn.addEventListener("click", fetchAndDisplayStats);
+    showStatsBtn.addEventListener("click", fetchAllStats);
+    refreshApiStatsBtn.addEventListener("click", fetchAndDisplayApiStats); // Add this event listener
     startAttendanceBtn.addEventListener("click", startWebcam);
     stopCameraBtn.addEventListener("click", stopWebcam);
     captureBtn.addEventListener("click", captureAndCheckAttendance);
     logoutBtn.addEventListener("click", logout);
     
-    // Functions
-    async function fetchAndDisplayStats() {
+    // Initial data load
+    fetchAllStats(); // Load user stats initially
+    
+    // Update the fetchAllStats function
+    async function fetchAllStats() {
         showStatsBtn.disabled = true;
+        try {
+            await fetchAndDisplayUserStats();
+        } catch (error) {
+            statusMessage.textContent = "Error fetching user data.";
+            console.error("Fetch error:", error);
+        } finally {
+            showStatsBtn.disabled = false;
+        }
+    }
+    
+    async function fetchAndDisplayUserStats() {
         try {
             const response = await fetch(`http://localhost:5000/admin/stats?email=${adminEmail}`);
             const data = await response.json();
 
             if (!response.ok) {
                 statusMessage.textContent = data.message || "Failed to fetch stats.";
-                showStatsBtn.disabled = false;
                 return;
             }
 
@@ -55,8 +97,9 @@ document.addEventListener("DOMContentLoaded", async function () {
             data.users.forEach(user => {
                 const row = document.createElement("tr");
                 row.innerHTML = `
+                    <td>${user.username || 'Unknown'}</td>
                     <td>${user.email}</td>
-                    <td>${user.role}</td>
+                    <td>${user.token || 'N/A'}</td>
                     <td>${user.apiCount}</td>
                     <td>
                         ${user.role === "user" ? `<button onclick="updateUserRole('${user.email}')">Make Admin</button>` : ""}
@@ -68,13 +111,43 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             statsTable.classList.remove("hidden");
         } catch (error) {
-            statusMessage.textContent = "Error fetching data.";
-            console.error("Fetch error:", error);
-        } finally {
-            showStatsBtn.disabled = false;
+            console.error("Error fetching user stats:", error);
+            throw error;
         }
     }
     
+    async function fetchAndDisplayApiStats() {
+        try {
+            refreshApiStatsBtn.disabled = true;
+            const response = await fetch(`http://localhost:5000/admin/api-stats?email=${adminEmail}`);
+            const data = await response.json();
+
+            if (!response.ok) {
+                statusMessage.textContent = data.message || "Failed to fetch API stats.";
+                return;
+            }
+
+            apiStatsBody.innerHTML = ""; 
+            data.endpoints.forEach(endpoint => {
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${endpoint.method}</td>
+                    <td>${endpoint.endpoint}</td>
+                    <td>${endpoint.count}</td>
+                `;
+                apiStatsBody.appendChild(row);
+            });
+
+            apiStatsTable.classList.remove("hidden");
+        } catch (error) {
+            console.error("Error fetching API stats:", error);
+            statusMessage.textContent = "Error fetching API stats.";
+        } finally {
+            refreshApiStatsBtn.disabled = false;
+        }
+    }
+    
+    // Keep existing functions
     async function startWebcam() {
         try {
             // Check if camera is already running

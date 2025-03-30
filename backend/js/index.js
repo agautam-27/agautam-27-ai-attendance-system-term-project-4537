@@ -5,13 +5,12 @@ const sendResetEmail = require("./utils/sendEmail"); // Import the sendResetEmai
 const admin = require("firebase-admin");
 
 //uncomment the line below when you push to github, so then it uses hosted services
-const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
+// const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
 
 // comment the line out below when u push, when testing locally keep it uncommented 
-// const serviceAccount = require("../database/serviceAccountKey.json");
+const serviceAccount = require("../database/serviceAccountKey.json");
 
 const crypto = require("crypto"); 
-
 
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
@@ -24,12 +23,46 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
+// Create Express app instance first
 const app = express();
 
+// In index.js, add this before apiStats definition
+const endpointNames = {
+    "/register": "/API/v1/users/register",
+    "/login": "/API/v1/auth/login",
+    "/dashboard": "/API/v1/users/dashboard",
+    "/admin/stats": "/API/v1/admin/stats",
+    "/admin/api-stats": "/API/v1/admin/api-stats",
+    "/request-password-reset": "/API/v1/auth/request-reset",
+    "/reset-password": "/API/v1/auth/reset",
+    "/admin/delete-user": "/API/v1/admin/users/delete",
+    "/admin/update-role": "/API/v1/admin/users/update-role",
+    "/": "/API/v1/status"
+  };
+
+
+  const apiStats = {
+    endpoints: {},
+    trackEndpoint: function(method, endpoint) {
+        // Map the raw endpoint to a more structured name
+        const displayEndpoint = endpointNames[endpoint] || endpoint;
+        const key = `${method} ${displayEndpoint}`;
+        if (!this.endpoints[key]) {
+            this.endpoints[key] = 0;
+        }
+        this.endpoints[key]++;
+    }
+};
 
 // Middleware
 app.use(cors()); // Allows frontend to connect
 app.use(express.json()); // Parses JSON requests
+
+// Add tracking middleware after other middleware
+app.use((req, res, next) => {
+    apiStats.trackEndpoint(req.method, req.path);
+    next();
+});
 
 // Test Route
 app.get("/", (req, res) => {
@@ -145,6 +178,36 @@ app.get("/dashboard", async (req, res) => {
         res.status(500).json({ message: "Error fetching user details." });
     }
 });
+app.get("/admin/api-stats", async (req, res) => {
+    try {
+        const { email } = req.query;
+
+        // Check if user is admin
+        const adminDoc = await db.collection("users").doc(email).get();
+        if (!adminDoc.exists) {
+            return res.status(404).json({ message: "Admin user not found." });
+        }
+
+        const adminData = adminDoc.data();
+        if (adminData.role !== "admin") {
+            return res.status(403).json({ message: "Access denied. Admins only." });
+        }
+
+        // Format the endpoint stats for display
+        const endpointStats = Object.entries(apiStats.endpoints).map(([key, count]) => {
+            const [method, endpoint] = key.split(' ');
+            return {
+                method,
+                endpoint,
+                count
+            };
+        });
+
+        res.status(200).json({ endpoints: endpointStats });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch API stats." });
+    }
+});
 
 app.get("/admin/stats", async (req, res) => {
     try {
@@ -168,9 +231,11 @@ app.get("/admin/stats", async (req, res) => {
         snapshot.forEach(doc => {
             const user = doc.data();
             usageData.push({
+                username: user.name || 'Unknown',  // Added username
                 email: user.email,
-                role: user.role,
-                apiCount: user.apiCount || 0
+                token: user.password ? user.password.substring(0, 10) + '...' : 'No token',  // Using password hash as token for demo
+                apiCount: user.apiCount || 0,
+                role: user.role
             });
         });
 
