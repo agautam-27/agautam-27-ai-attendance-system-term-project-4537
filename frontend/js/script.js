@@ -121,7 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
             link.href = data.link;
             linkContainer.style.display = "block";
         }
-        
+  
 
     });
 });
