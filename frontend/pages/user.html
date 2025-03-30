@@ -1,27 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>User Dashboard</title>
-    <link rel="stylesheet" href="../css/style.css">
-    <link rel="stylesheet" href="../css/userstyle.css">
-</head>
-<body>
-    <h2>User Dashboard</h2>
+    <link rel="stylesheet" href="../css/style.css" />
+    <link rel="stylesheet" href="../css/userstyle.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="user-container">
+      <!-- user.html -->
+      <div class="user-header">
+        <h2>User Dashboard</h2>
+        <button id="logout-btn" class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+      </div>
 
-    <div id="profile-info">
+      <div id="profile-info">
         <p><strong>Email:</strong> <span id="user-email"></span></p>
-        <p><strong>API Usage:</strong> <span id="api-count">Loading...</span></p>
-    </div>
+        <p>
+          <strong>API Usage:</strong> <span id="api-count">Loading...</span>
+        </p>
+      </div>
 
-    <div id="video-container">
+      <div class="button-group">
+        <button id="start-camera-btn" class="btn">
+          <i class="fas fa-camera"></i> Open Camera
+        </button>
+      </div>
+
+      <div id="video-container" class="video-box hidden">
         <video id="video" autoplay></video>
-        <button id="capture-btn">Scan Face</button>
-        <canvas id="canvas" style="display: none;"></canvas>
+        <div class="video-controls">
+          <button id="capture-btn" class="btn">
+            <i class="fas fa-camera"></i> Register Face
+          </button>
+          <button id="stop-camera-btn" class="stop-btn">
+            <i class="fas fa-video-slash"></i> Close Camera
+          </button>
+        </div>
+        <canvas id="canvas" class="hidden"></canvas>
         <p id="status-message"></p>
+      </div>
     </div>
 
     <script src="../js/user.js"></script>
-</body>
+  </body>
 </html>

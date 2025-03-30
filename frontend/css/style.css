@@ -1,43 +1,112 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Arial', sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    background-color: #f4f4f4;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 20px;
 }
 
 .container {
     background: white;
-    padding: 20px;
+    padding: 25px;
     border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    width: 300px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+    width: 320px;
     text-align: center;
+    margin: 10px;
+}
+
+h2 {
+    color: #4a5568;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 20px;
 }
 
 input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    width: calc(100% - 24px);
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border 0.2s ease;
+}
+
+input:focus {
+    outline: none;
+    border-color: #4299e1;
+    box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
 }
 
 button {
     width: 100%;
-    padding: 10px;
-    background: #007BFF;
+    padding: 12px;
+    background: #4299e1;
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 500;
     cursor: pointer;
+    transition: 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
 }
 
 button:hover {
-    background: #0056b3;
+    background: #3182ce;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .hidden {
     display: none;
+}
+
+a {
+    color: #4299e1;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: #3182ce;
+    text-decoration: underline;
+}
+
+p {
+    margin: 15px 0 5px 0;
+    font-size: 14px;
+    color: #4a5568;
+}
+
+.error-message {
+    background-color: #fed7d7;
+    color: #9b2c2c;
+    border: 1px solid #feb2b2;
+    padding: 10px;
+    border-radius: 6px;
+    margin: 10px 0;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: left;
+    display: none;
+}
+
+#reset-link-container {
+    background-color: #c6f6d5;
+    color: #276749;
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 15px;
+    border: 1px solid #9ae6b4;
+}
+
+#reset-link {
+    color: #276749;
+    font-weight: 500;
 }

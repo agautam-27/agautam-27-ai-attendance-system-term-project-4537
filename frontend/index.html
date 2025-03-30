@@ -12,6 +12,7 @@
 <body>
     <div class="container">
         <h2>Login</h2>
+        <div id="login-error" class="error-message"></div>
         <form id="login-form">
             <input type="email" id="email" placeholder="Email" required>
             <input type="password" id="password" placeholder="Password" required>
@@ -19,14 +20,16 @@
         </form>
         <p>Don't have an account? <a href="#" id="show-register">Register here</a></p>
         <p><a href="#" id="forgot-password-link">Forgot Password?</a></p>
-
     </div>
 
     <div class="container hidden" id="register-container">
         <h2>Register</h2>
+        <div id="register-error" class="error-message"></div>
         <form id="register-form">
-            <label><input type="radio" name="role" value="user" checked> User</label>
-            <label><input type="radio" name="role" value="admin"> Admin</label>
+            <div class="role-selection">
+                <label><input type="radio" name="role" value="user" checked> User</label>
+                <label><input type="radio" name="role" value="admin"> Admin</label>
+            </div>
 
             <input type="email" id="register-email" placeholder="Email" required>
     
@@ -45,20 +48,17 @@
         <p>Already have an account? <a href="#" id="show-login">Login here</a></p>
     </div>
     
-
     <div class="container hidden" id="forgot-password-container">
         <h2>Reset Password</h2>
+        <div id="reset-error" class="error-message"></div>
         <form id="forgot-password-form">
             <input type="email" id="reset-email" placeholder="Enter your email" required>
             <button type="submit">Send Reset Link</button>
         </form>
         <p><a href="#" id="back-to-login">Back to Login</a></p>
-        <!-- <p><a href="#" id="forgot-password-link">Forgot Password?</a></p> -->
         <p id="reset-link-container" style="display: none;">
             <a id="reset-link" href="#" target="_blank">Click here to reset your password</a>
         </p>
-        
-
     </div>
 
     <script src="js/script.js"></script>

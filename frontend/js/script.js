@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
         loginContainer.classList.remove("hidden");
     });
 
-    // Register user
+    // Update the register form handler
     document.getElementById("register-form").addEventListener("submit", async function (e) {
         e.preventDefault();
         const email = document.getElementById("register-email").value;
@@ -41,6 +41,11 @@ document.addEventListener("DOMContentLoaded", function () {
         const role = document.querySelector('input[name="role"]:checked').value;
         const name = document.getElementById("register-name").value;
         const studentId = document.getElementById("register-student-id").value;
+        const registerError = document.getElementById("register-error");
+
+        // Clear previous error messages
+        registerError.style.display = "none";
+        registerError.textContent = "";
 
         const requestBody = { email, password, role, name };
 
@@ -49,80 +54,111 @@ document.addEventListener("DOMContentLoaded", function () {
             requestBody.studentId = studentId;
         }
 
-        const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/register", {
-        //const response = await fetch("http://localhost:5000/register", {
+        try {
+            const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/register", {
+                //const response = await fetch("http://localhost:5000/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(requestBody),
+            });
 
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify( requestBody ),
-        });
+            const data = await response.json();
 
-        const data = await response.json();
-
-        if (response.ok) {
-            registerContainer.classList.add("hidden");
-            loginContainer.classList.remove("hidden");
-        } else {
-            console.error(data.message || "Registration failed.");
+            if (response.ok) {
+                registerContainer.classList.add("hidden");
+                loginContainer.classList.remove("hidden");
+                alert("Registration successful! Please log in.");
+            } else {
+                registerError.textContent = data.message || "Registration failed.";
+                registerError.style.display = "block";
+                console.error(data.message || "Registration failed.");
+            }
+        } catch (error) {
+            registerError.textContent = "Connection error. Please try again later.";
+            registerError.style.display = "block";
+            console.error("Registration error:", error);
         }
     });
 
-    // Login user
+
+    // Update the login form handler
     document.getElementById("login-form").addEventListener("submit", async function (e) {
         e.preventDefault();
         const email = document.getElementById("email").value;
         const password = document.getElementById("password").value;
+        const loginError = document.getElementById("login-error");
 
-        const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/login", {
-        //const response = await fetch("http://localhost:5000/login", {
+        // Clear previous error messages
+        loginError.style.display = "none";
+        loginError.textContent = "";
 
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password }),
-        });
+        try {
+            // const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/login", {
+            const response = await fetch("http://localhost:5000/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            });
 
-        const data = await response.json();
+            const data = await response.json();
 
-        if (response.ok) {
-            sessionStorage.setItem("email", email);
+            if (response.ok) {
+                sessionStorage.setItem("email", email);
 
-            if (data.role === "admin") {
-                window.location.href = "pages/admin.html";
-            } else {
-                if (data.overQuota) {
-                    alert("You've exceeded your free 20 API calls. Service will continue, but please be aware.");
+                if (data.role === "admin") {
+                    window.location.href = "pages/admin.html";
+                } else {
+                    if (data.overQuota) {
+                        alert("You've exceeded your free 20 API calls. Service will continue, but please be aware.");
+                    }
+                    window.location.href = "pages/user.html";
                 }
-                window.location.href = "pages/user.html";
+            } else {
+                loginError.textContent = data.message || "Login failed. Please check your credentials.";
+                loginError.style.display = "block";
+                console.error(data.message || "Login failed.");
             }
-        } else {
-            console.error(data.message || "Login failed.");
+        } catch (error) {
+            loginError.textContent = "Connection error. Please try again later.";
+            loginError.style.display = "block";
+            console.error("Login error:", error);
         }
     });
 
-    // Forgot password handler
+    // Update the forgot password form handler
     document.getElementById("forgot-password-form").addEventListener("submit", async function (e) {
         e.preventDefault();
         const email = document.getElementById("reset-email").value;
+        const resetError = document.getElementById("reset-error");
 
-        const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/request-password-reset", {
-        // const response = await fetch("http://localhost:5000/request-password-reset", {
+        // Clear previous error messages
+        resetError.style.display = "none";
+        resetError.textContent = "";
 
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email }),
-        });
+        try {
+            const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/request-password-reset", {
+            // const response = await fetch("http://localhost:5000/request-password-reset", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+            });
 
-        const data = await response.json();
+            const data = await response.json();
 
-        if (response.ok) {
-            // Show styled reset link instead of raw alert
-            const linkContainer = document.getElementById("reset-link-container");
-            const link = document.getElementById("reset-link");
-            link.href = data.link;
-            linkContainer.style.display = "block";
+            if (response.ok) {
+                // Show success message
+                alert("Password reset email sent! Please check your inbox.");
+            } else {
+                resetError.textContent = data.message || "Failed to send reset email.";
+                resetError.style.display = "block";
+            }
+        } catch (error) {
+            resetError.textContent = "Connection error. Please try again later.";
+            resetError.style.display = "block";
+            console.error("Reset error:", error);
         }
-  
 
+  
     });
 });
 
@@ -134,16 +170,14 @@ document.addEventListener("DOMContentLoaded", function () {
     function toggleStudentIdField() {
         const selectedRole = document.querySelector('input[name="role"]:checked').value;
         if (selectedRole === "admin") {
-            studentIdField.style.display = "none"; // Hide field for admin
+            studentIdField.style.display = "none"; 
         } else {
-            studentIdField.style.display = "block"; // Show field for user
+            studentIdField.style.display = "block"; 
         }
     }
 
-    // Attach event listeners to role inputs
     roleInputs.forEach(input => input.addEventListener("change", toggleStudentIdField));
 
-    // Call once to set initial state
     toggleStudentIdField();
 });
 
@@ -159,14 +193,14 @@ document.addEventListener("DOMContentLoaded", function () {
         e.preventDefault();
         loginContainer.classList.add("hidden");
         registerContainer.classList.remove("hidden");
-        registerStyle.removeAttribute("disabled");  // Enable register.css
+        registerStyle.removeAttribute("disabled");  
     });
 
     showLoginLink.addEventListener("click", function (e) {
         e.preventDefault();
         registerContainer.classList.add("hidden");
         loginContainer.classList.remove("hidden");
-        registerStyle.setAttribute("disabled", "true");  // Disable register.css
+        registerStyle.setAttribute("disabled", "true");  
     });
 });
 

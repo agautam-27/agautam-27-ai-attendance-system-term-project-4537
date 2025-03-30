@@ -1,27 +1,67 @@
-/* Centering the content */
 body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    background-color: #eef2f7;
-}
-
-/* Styling the dashboard title */
-h2 {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa;
     color: #333;
-    font-size: 24px;
-    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;  
+    height: 100vh;
+    margin: 0;
+    overflow-y: auto;  
 }
 
-/* Styling the profile info */
-#profile-info {
+.user-container {
     background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+    width: 80%;
+    max-width: 600px;
+    text-align: center;
+    margin-top: 20px; 
+    margin-bottom: 20px;
+    position: relative; 
+}
+
+.user-header {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    position: relative;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+h2 {
+    margin: 0;
+    color: #4a5568;
+    font-weight: 600;
+}
+
+.logout-btn {
+    background-color: #fc8181;
+    padding: 7px 12px;
+    font-size: 14px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+    background-color: #f56565;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#profile-info {
+    background: #f8f9fa;
     padding: 15px;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 280px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     text-align: left;
     margin-bottom: 20px;
 }
@@ -29,46 +69,114 @@ h2 {
 #profile-info p {
     margin: 8px 0;
     font-size: 16px;
+    color: #4a5568;
 }
 
-/* Video container styling */
-#video-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 500px;
+.button-group {
+    margin: 15px 0;
 }
 
-#video {
-    width: 100%;
-    border-radius: 5px;
-    margin-bottom: 10px;
-}
-
-/* Styling the scan button */
-#capture-btn {
-    width: 100%;
-    padding: 10px;
-    background: #28a745;
+.btn {
+    padding: 10px 15px;
+    background: #4299e1;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 16px;
-    margin-top: 10px;
+    margin: 5px;
+    transition: 0.2s ease;
+    font-weight: 500;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-#capture-btn:hover {
-    background: #218838;
+.btn:hover {
+    background: #3182ce;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-/* Status message styling */
+.stop-btn {
+    background-color: #fc8181;
+    padding: 10px 15px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px;
+    transition: 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.stop-btn:hover {
+    background-color: #f56565;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.video-box {
+    margin-top: 15px;
+    padding: 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.video-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+video {
+    width: 320px;
+    height: 240px;
+    margin: 0 auto;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+}
+
 #status-message {
-    margin-top: 10px;
+    margin-top: 15px;
+    padding: 10px;
     font-size: 14px;
-    color: #555;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.success-message {
+    background-color: #c6f6d5;
+    color: #276749;
+    border: 1px solid #9ae6b4;
+}
+
+.error-message {
+    background-color: #fed7d7;
+    color: #9b2c2c;
+    border: 1px solid #feb2b2;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .user-container {
+        width: 95%;
+    }
+    
+    .user-header {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .logout-btn {
+        margin-top: 10px;
+    }
+    
+    h2 {
+        margin-bottom: 15px;
+    }
 }

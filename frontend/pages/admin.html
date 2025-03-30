@@ -7,36 +7,81 @@
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/adminstyle.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
     <div class="admin-container">
-        <h2>Admin Dashboard</h2>
+        <div class="admin-header">
+            <h2>Admin Dashboard</h2>
+            <button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+        
         <p id="status-message"></p>
 
-        <div class="button-group">
-            <button id="show-stats-btn">Show API Usage Stats</button>
-            <button id="start-attendance-btn">Start Attendance Face Scan</button>
+        <div class="admin-tabs">
+            <button class="tab-btn active" data-tab="stats">User Statistics</button>
+            <button class="tab-btn" data-tab="api-stats">API Statistics</button>
+            <button class="tab-btn" data-tab="attendance">Attendance</button>
         </div>
 
-        <div id="video-container" class="video-box hidden">
-            <video id="admin-video" autoplay></video>
-            <button id="capture-attendance-btn">Capture Face</button>
-            <canvas id="admin-canvas" class="hidden"></canvas>
-            <p id="attendance-status"></p>
+        <div class="tab-content" id="stats-content">
+            <div class="button-group">
+                <button id="show-stats-btn">Refresh User Stats</button>
+            </div>
+
+            <div class="table-container">
+                <h3>User API Usage</h3>
+                <table id="stats-table" class="hidden">
+                    <thead>
+                        <tr>
+                            <th>User name</th>
+                            <th>Email</th>
+                            <th>Token</th>
+                            <th>Total Requests</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stats-body"></tbody>
+                </table>
+            </div>
         </div>
 
-        <table id="stats-table" class="hidden">
-            <thead>
-                <tr>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>API Usage</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="stats-body"></tbody>
-        </table>
+        <div class="tab-content hidden" id="api-stats-content">
+            <div class="button-group">
+                <button id="refresh-api-stats-btn">Refresh API Stats</button>
+            </div>
+
+            <div class="table-container">
+                <h3>API Endpoint Statistics</h3>
+                <table id="api-stats-table" class="hidden">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Endpoint</th>
+                            <th>Requests</th>
+                        </tr>
+                    </thead>
+                    <tbody id="api-stats-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content hidden" id="attendance-content">
+            <div class="button-group">
+                <button id="start-attendance-btn">Start Attendance Face Scan</button>
+            </div>
+
+            <div id="video-container" class="video-box hidden">
+                <video id="admin-video" autoplay></video>
+                <div class="video-controls">
+                    <button id="capture-attendance-btn">Capture Face</button>
+                    <button id="stop-camera-btn" class="stop-btn">Stop Camera</button>
+                </div>
+                <canvas id="admin-canvas" class="hidden"></canvas>
+                <p id="attendance-status"></p>
+            </div>
+        </div>
     </div>
 
     <script src="../js/admin.js"></script>
