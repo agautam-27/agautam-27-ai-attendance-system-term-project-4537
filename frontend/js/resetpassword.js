@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
+    //the link in email contains the token and email as query parameters
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
     const email = params.get("email");
@@ -8,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+    // in resetpassword.html, we have a form with id reset-form and an input with id new-password
     const form = document.getElementById("reset-form");
 
     form.addEventListener("submit", async (e) => {
@@ -15,6 +17,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const newPassword = document.getElementById("new-password").value;
 
+        //"http://localhost:5000/reset-password"
+        //"https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/reset-password"
         try {
             const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/reset-password", {
                 method: "POST",

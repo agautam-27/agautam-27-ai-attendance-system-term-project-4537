@@ -1,12 +1,12 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-
+const sendResetEmail = require("./utils/sendEmail"); // Import the sendResetEmail function
 const admin = require("firebase-admin");
 
 //uncomment the line below when you push to github, so then it uses hosted services
-const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
-
+// const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
+const serviceAccount = require ("../database/serviceAccountKey.json"); // Use this line when testing locally
 
 // comment the line out below when u push, when testing locally keep it uncommented 
 //const serviceAccount = require("../database/serviceAccountKey.json");
@@ -212,7 +212,12 @@ app.post("/request-password-reset", async (req, res) => {
 
     console.log("RESET LINK (Send via email):", resetLink);
 
-    res.status(200).json({ message: "Reset link generated.", link: resetLink });
+    const emailResponse = await sendResetEmail(email, resetLink);
+    if(emailResponse.success){
+        return res.status(200).json({ message: "Password reset email sent successfully." });
+    } else{
+        return res.status(500).json({ message: "Error sending email." });
+    }
 });
 
 app.post("/reset-password", async (req, res) => {
