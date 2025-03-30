@@ -1,0 +1,101 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;  
+    height: 100vh;
+    margin: 0;
+    overflow-y: auto;  
+}
+
+.admin-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    max-width: 800px;
+    text-align: center;
+    margin-top: 20px; 
+}
+
+h2 {
+    margin-bottom: 15px;
+}
+
+p#status-message {
+    color: red;
+    font-weight: bold;
+}
+
+.button-group {
+    margin: 10px 0;
+}
+
+button {
+    padding: 10px 15px;
+    background: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px;
+    transition: 0.3s ease;
+}
+
+button:hover {
+    background: #0056b3;
+}
+
+.video-box {
+    margin-top: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+video {
+    width: 100%;
+    max-width: 400px;
+    border-radius: 8px;
+}
+
+table {
+    width: 100%;
+    margin-top: 40px; 
+    border-collapse: collapse;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    overflow: auto;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: center;
+}
+
+th {
+    background-color: #007BFF;
+    color: white;
+    position: sticky;
+    top: 0;  
+    z-index: 1;
+}
+
+td button {
+    background: red;
+    padding: 5px 10px;
+    font-size: 0.9em;
+}
+
+td button:hover {
+    background: darkred;
+}
+
+.hidden {
+    display: none;
+}

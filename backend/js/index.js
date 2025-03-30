@@ -259,7 +259,55 @@ app.post("/reset-password", async (req, res) => {
     res.status(200).json({ message: "Password has been successfully reset." });
 });
 
+app.delete("/admin/delete-user", async (req, res) => {
+    try {
+        const { adminEmail, userEmail } = req.body;
 
+        // Verify admin
+        const adminDoc = await db.collection("users").doc(adminEmail).get();
+        if (!adminDoc.exists || adminDoc.data().role !== "admin") {
+            return res.status(403).json({ message: "Unauthorized. Admins only." });
+        }
+
+        // Check if user exists
+        const userDoc = await db.collection("users").doc(userEmail).get();
+        if (!userDoc.exists) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        // Delete user
+        await db.collection("users").doc(userEmail).delete();
+        res.status(200).json({ message: `User ${userEmail} deleted successfully.` });
+
+    } catch (error) {
+        res.status(500).json({ message: "Error deleting user.", error: error.message });
+    }
+});
+
+app.patch("/admin/update-role", async (req, res) => {
+    try {
+        const { adminEmail, userEmail } = req.body;
+
+        // Verify admin
+        const adminDoc = await db.collection("users").doc(adminEmail).get();
+        if (!adminDoc.exists || adminDoc.data().role !== "admin") {
+            return res.status(403).json({ message: "Unauthorized. Admins only." });
+        }
+
+        // Check if user exists
+        const userDoc = await db.collection("users").doc(userEmail).get();
+        if (!userDoc.exists) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        // Update role
+        await db.collection("users").doc(userEmail).update({ role: "admin" });
+        res.status(200).json({ message: `User ${userEmail} is now an admin.` });
+
+    } catch (error) {
+        res.status(500).json({ message: "Error updating role.", error: error.message });
+    }
+});
 
 // Start Server
 const PORT = process.env.PORT || 5000;
