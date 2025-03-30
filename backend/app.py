@@ -8,6 +8,7 @@ from firebase_admin import credentials, firestore
 from ultralytics import YOLO
 import face_recognition
 from flasgger import Swagger, swag_from
+from datetime import datetime
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -35,8 +36,8 @@ swagger = Swagger(app, config=swagger_config)
 model = YOLO("yolov8n.pt")  
 
 # Initialize Firebase
-cred = credentials.Certificate("serviceAccountKey.json") #keep this line uncomment when want to push changes
-#cred = credentials.Certificate("database/serviceAccountKey.json") #keep this comment only , only uncomment when testing local host
+# cred = credentials.Certificate("serviceAccountKey.json") #keep this line uncomment when want to push changes
+cred = credentials.Certificate("database/serviceAccountKey.json") #keep this comment only , only uncomment when testing local host
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
@@ -179,15 +180,15 @@ def register_face():
 @app.route("/verify-face", methods=["POST"])
 @swag_from({
     "tags": ["Face Verification"],
-    "summary": "Verify a face against registered faces",
-    "description": "Upload an image to verify if the face matches any registered user",
+    "summary": "Verify multiple faces against registered faces",
+    "description": "Upload an image to verify all faces in the image against registered users",
     "parameters": [
         {
             "name": "image",
             "in": "formData",
             "type": "file",
             "required": True,
-            "description": "Image file containing the face to verify"
+            "description": "Image file containing faces to verify"
         }
     ],
     "responses": {
@@ -197,7 +198,19 @@ def register_face():
                 "type": "object",
                 "properties": {
                     "match": {"type": "boolean"},
-                    "email": {"type": "string", "description": "Email of the matched user (if match is true)"},
+                    "matched_users": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "email": {"type": "string"},
+                                "name": {"type": "string"},
+                                "studentId": {"type": "string"}
+                            }
+                        }
+                    },
+                    "total_faces_detected": {"type": "integer"},
+                    "total_matches": {"type": "integer"},
                     "message": {"type": "string", "description": "Message if no match found (if match is false)"}
                 }
             }
@@ -220,37 +233,119 @@ def verify_face():
         img = cv2.imdecode(img_bytes, cv2.IMREAD_COLOR)
         rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        # Encode face from the uploaded image
-        uploaded_encodings = face_recognition.face_encodings(rgb_img)
-        if not uploaded_encodings:
-            return jsonify({"error": "No face found."}), 400
+        # Detect face locations first
+        face_locations = face_recognition.face_locations(rgb_img)
+        if not face_locations:
+            return jsonify({"error": "No faces found in image."}), 400
 
-        uploaded_encoding = uploaded_encodings[0]
+        # Encode all faces in the image
+        face_encodings = face_recognition.face_encodings(rgb_img, face_locations)
+        if not face_encodings:
+            return jsonify({"error": "Failed to encode faces."}), 400
 
         # Get all saved encodings from Firestore
-        saved_faces = db.collection("face_encodings").stream()
+        saved_faces = list(db.collection("face_encodings").stream())
+        if not saved_faces:
+            return jsonify({"error": "No registered faces found in database."}), 404
 
+        # Prepare a dictionary of saved encodings
+        saved_encodings = {}
         for doc in saved_faces:
+            email = doc.id
             data = doc.to_dict()
-            saved_encoding = np.array(data["encoding"])
+            saved_encodings[email] = np.array(data["encoding"])
 
-            # Compare face using face_recognition
-            results = face_recognition.compare_faces([saved_encoding], uploaded_encoding)
-            if results[0]:
-                # Match found
-                email = doc.id
+        # For storing matched users
+        matched_users = []
+        
+        # Get current date
+        today = datetime.now().strftime("%Y-%m-%d")
 
-                # Log attendance
-                db.collection("attendance").add({
-                    "email": email,
-                    "timestamp": firestore.SERVER_TIMESTAMP
-                })
+        # Compare each detected face against all saved faces
+        for face_encoding in face_encodings:
+            for email, saved_encoding in saved_encodings.items():
+                # Compare face using face_recognition
+                match = face_recognition.compare_faces([saved_encoding], face_encoding)[0]
+                if match:
+                    # Get user data from Firestore
+                    user_data = None
+                    name = "Unknown"
+                    student_id = ""
+                    
+                    try:
+                        # Get the user document directly by email
+                        user_doc = db.collection("users").document(email).get()
+                        
+                        if user_doc.exists:
+                            user_data = user_doc.to_dict()
+                            name = user_data.get("name", "Unknown")
+                            student_id = user_data.get("studentId", "")
+                            print(f"Found user data: {user_data}")
+                        else:
+                            print(f"User document not found for email: {email}")
+                            # As a fallback, try querying by email field
+                            user_query = db.collection("users").where("email", "==", email).limit(1).get()
+                            
+                            if user_query and len(user_query) > 0:
+                                user_data = user_query[0].to_dict()
+                                name = user_data.get("name", "Unknown")
+                                student_id = user_data.get("studentId", "")
+                                print(f"Found user data via query: {user_data}")
+                            else:
+                                print(f"User not found via query for email: {email}")
+                                name = email  # Use email as fallback
+                    except Exception as e:
+                        print(f"Error getting user data: {e}")
+                    
+                    print(f"User info - Email: {email}, Name: {name}, Student ID: {student_id}")
+                    
+                    # Add to matched users with full user info
+                    matched_users.append({
+                        "email": email,
+                        "name": name,
+                        "studentId": student_id
+                    })
+                    
+                    # Create a valid document ID using student ID if available
+                    # If student ID is empty or None, use email as document ID
+                    doc_id = student_id if student_id and student_id.strip() else email
+                    print(f"Using document ID: {doc_id}")
+                    
+                    # Log attendance for this user with additional info
+                    try:
+                        attendance_data = {
+                            "email": email,
+                            "name": name,
+                            "studentId": student_id,
+                            "date": today,
+                            "timestamp": firestore.SERVER_TIMESTAMP
+                        }
+                        
+                        print(f"Saving attendance data: {attendance_data}")
+                        db.collection("attendance").document(doc_id).set(attendance_data)
+                        print(f"Successfully saved attendance with ID: {doc_id}")
+                    except Exception as e:
+                        print(f"Error saving attendance: {e}")
+                    
+                    # Once we find a match for this face, move to the next face
+                    break
 
-                return jsonify({"match": True, "email": email})
-
-        return jsonify({"match": False, "message": "No matching face found."})
+        if matched_users:
+            return jsonify({
+                "match": True,
+                "matched_users": matched_users,
+                "total_faces_detected": len(face_encodings),
+                "total_matches": len(matched_users)
+            })
+        else:
+            return jsonify({
+                "match": False,
+                "message": "No matching faces found.",
+                "total_faces_detected": len(face_encodings)
+            })
 
     except Exception as e:
+        print(f"Error in verify_face: {e}")
         return jsonify({"error": str(e)}), 500
 
 
@@ -275,7 +370,18 @@ def verify_face():
                 "type": "object",
                 "properties": {
                     "match": {"type": "boolean"},
-                    "email": {"type": "string", "description": "Email of the matched user (if match is true)"},
+                    "matched_users": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "email": {"type": "string"},
+                                "name": {"type": "string"},
+                                "studentId": {"type": "string"}
+                            }
+                        }
+                    },
+                    "total_faces_detected": {"type": "integer"},
                     "message": {"type": "string", "description": "Message if no match found (if match is false)"}
                 }
             }
@@ -298,23 +404,68 @@ def check_attendance():
         img = cv2.imdecode(img_bytes, cv2.IMREAD_COLOR)
         rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        unknown_encodings = face_recognition.face_encodings(rgb_img)
-        if not unknown_encodings:
-            return jsonify({"match": False, "message": "No face found."}), 400
+        # Detect face locations first
+        face_locations = face_recognition.face_locations(rgb_img)
+        if not face_locations:
+            return jsonify({"error": "No faces found."}), 400
 
-        unknown_encoding = unknown_encodings[0]
-
-        # Fetch all stored encodings from Firestore
-        docs = db.collection("face_encodings").stream()
-        for doc in docs:
+        # Encode all faces in the image
+        face_encodings = face_recognition.face_encodings(rgb_img, face_locations)
+        
+        # Get all saved encodings from Firestore
+        saved_faces = list(db.collection("face_encodings").stream())
+        
+        # Prepare a dictionary of saved encodings
+        saved_encodings = {}
+        for doc in saved_faces:
+            email = doc.id
             data = doc.to_dict()
-            known_encoding = np.array(data["encoding"])
-
-            match = face_recognition.compare_faces([known_encoding], unknown_encoding)[0]
-            if match:
-                return jsonify({"match": True, "email": doc.id})
-
-        return jsonify({"match": False, "message": "No matching face found."})
+            saved_encodings[email] = np.array(data["encoding"])
+            
+        # For storing matched users
+        matched_users = []
+        
+        # Compare each detected face against all saved faces
+        for face_encoding in face_encodings:
+            for email, saved_encoding in saved_encodings.items():
+                match = face_recognition.compare_faces([saved_encoding], face_encoding)[0]
+                if match:
+                    # Get user data from Firestore
+                    try:
+                        user_doc = db.collection("users").doc(email).get()
+                        
+                        if user_doc.exists:
+                            user_data = user_doc.to_dict()
+                            name = user_data.get("name", "Unknown")
+                            student_id = user_data.get("studentId", "")
+                        else:
+                            # If not found, use email as name
+                            name = email
+                            student_id = ""
+                    except Exception as e:
+                        print(f"Error getting user data: {e}")
+                        name = email  # Use email as fallback
+                        student_id = ""
+                        
+                    matched_users.append({
+                        "email": email,
+                        "name": name,
+                        "studentId": student_id
+                    })
+                    break
+                    
+        if matched_users:
+            return jsonify({
+                "match": True,
+                "matched_users": matched_users,
+                "total_faces_detected": len(face_encodings)
+            })
+        else:
+            return jsonify({
+                "match": False, 
+                "message": "No matching faces found.",
+                "total_faces_detected": len(face_encodings)
+            })
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
