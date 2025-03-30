@@ -28,15 +28,21 @@ document.addEventListener("DOMContentLoaded", async function () {
                 return;
             }
 
+            statsBody.innerHTML = ""; 
             data.users.forEach(user => {
                 const row = document.createElement("tr");
                 row.innerHTML = `
                     <td>${user.email}</td>
                     <td>${user.role}</td>
                     <td>${user.apiCount}</td>
+                    <td>
+                        ${user.role === "user" ? `<button onclick="updateUserRole('${user.email}')">Make Admin</button>` : ""}
+                        <button onclick="deleteUser('${user.email}')">Delete</button>
+                    </td>
                 `;
                 statsBody.appendChild(row);
             });
+
 
             statsTable.style.display = "table";
         } catch (error) {
@@ -94,3 +100,45 @@ document.addEventListener("DOMContentLoaded", async function () {
     startAttendanceBtn.addEventListener("click", startWebcam);
     captureBtn.addEventListener("click", captureAndCheckAttendance);
 });
+
+async function deleteUser(userEmail) {
+    const adminEmail = sessionStorage.getItem("email");
+
+    if (!confirm(`Are you sure you want to delete ${userEmail}?`)) return;
+
+    try {
+        const response = await fetch("http://localhost:5000/admin/delete-user", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ adminEmail, userEmail }),
+        });
+
+        const data = await response.json();
+        alert(data.message);
+        location.reload(); // Refresh table after deletion
+    } catch (error) {
+        console.error("Error deleting user:", error);
+        alert("Failed to delete user.");
+    }
+}
+
+async function updateUserRole(userEmail) {
+    const adminEmail = sessionStorage.getItem("email");
+
+    if (!confirm(`Are you sure you want to make ${userEmail} an admin?`)) return;
+
+    try {
+        const response = await fetch("http://localhost:5000/admin/update-role", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ adminEmail, userEmail }),
+        });
+
+        const data = await response.json();
+        alert(data.message);
+        location.reload(); // Refresh table to reflect role change
+    } catch (error) {
+        console.error("Error updating role:", error);
+        alert("Failed to update user role.");
+    }
+}
