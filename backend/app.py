@@ -7,10 +7,29 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from ultralytics import YOLO
 import face_recognition
+from flasgger import Swagger, swag_from
 
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # 🔹 Allow all frontend requests
+
+# Initialize Swagger
+swagger_config = {
+    "headers": [],
+    "specs": [
+        {
+            "endpoint": "apispec",
+            "route": "/apispec.json",
+            "rule_filter": lambda rule: True,
+            "model_filter": lambda tag: True,
+        }
+    ],
+    "static_url_path": "/flasgger_static",
+    "swagger_ui": True,
+    "specs_route": "/docs/",
+}
+
+swagger = Swagger(app, config=swagger_config)
 
 # Load the model 
 model = YOLO("yolov8n.pt")  
@@ -22,6 +41,48 @@ firebase_admin.initialize_app(cred)
 db = firestore.client()
 
 @app.route("/detect", methods=["POST"])
+@swag_from({
+    "tags": ["Face Detection"],
+    "summary": "Detect faces in an image",
+    "description": "Upload an image to detect all faces using YOLOv8 model",
+    "parameters": [
+        {
+            "name": "image",
+            "in": "formData",
+            "type": "file",
+            "required": True,
+            "description": "Image file to detect faces from"
+        }
+    ],
+    "responses": {
+        "200": {
+            "description": "Faces detected successfully",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "faces_detected": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "x1": {"type": "integer"},
+                                "y1": {"type": "integer"},
+                                "x2": {"type": "integer"},
+                                "y2": {"type": "integer"}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "400": {
+            "description": "Bad request - No image file found"
+        },
+        "500": {
+            "description": "Internal server error"
+        }
+    }
+})
 def detect_faces():
     try:
         if "image" not in request.files:
@@ -46,6 +107,44 @@ def detect_faces():
         return jsonify({"error": str(e)}), 500 
 
 @app.route("/register-face", methods=["POST"])
+@swag_from({
+    "tags": ["Face Registration"],
+    "summary": "Register a face for a user",
+    "description": "Register a face associated with an email for future verification",
+    "parameters": [
+        {
+            "name": "email",
+            "in": "formData",
+            "type": "string",
+            "required": True,
+            "description": "Email address of the user"
+        },
+        {
+            "name": "image",
+            "in": "formData",
+            "type": "file",
+            "required": True,
+            "description": "Image file containing the face to register"
+        }
+    ],
+    "responses": {
+        "200": {
+            "description": "Face registered successfully",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "message": {"type": "string"}
+                }
+            }
+        },
+        "400": {
+            "description": "Bad request - Email or image required, or no face found in image"
+        },
+        "500": {
+            "description": "Internal server error"
+        }
+    }
+})
 def register_face():
     try:
         email = request.form.get("email")
@@ -78,6 +177,39 @@ def register_face():
         return jsonify({"error": str(e)}), 500
 
 @app.route("/verify-face", methods=["POST"])
+@swag_from({
+    "tags": ["Face Verification"],
+    "summary": "Verify a face against registered faces",
+    "description": "Upload an image to verify if the face matches any registered user",
+    "parameters": [
+        {
+            "name": "image",
+            "in": "formData",
+            "type": "file",
+            "required": True,
+            "description": "Image file containing the face to verify"
+        }
+    ],
+    "responses": {
+        "200": {
+            "description": "Face verification result",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "match": {"type": "boolean"},
+                    "email": {"type": "string", "description": "Email of the matched user (if match is true)"},
+                    "message": {"type": "string", "description": "Message if no match found (if match is false)"}
+                }
+            }
+        },
+        "400": {
+            "description": "Bad request - Image required or no face found"
+        },
+        "500": {
+            "description": "Internal server error"
+        }
+    }
+})
 def verify_face():
     try:
         file = request.files.get("image")
@@ -123,6 +255,39 @@ def verify_face():
 
 
 @app.route("/check-attendance", methods=["POST"])
+@swag_from({
+    "tags": ["Attendance"],
+    "summary": "Check attendance using face recognition",
+    "description": "Upload an image to check if the face matches any registered user for attendance",
+    "parameters": [
+        {
+            "name": "image",
+            "in": "formData",
+            "type": "file",
+            "required": True,
+            "description": "Image file containing the face to check for attendance"
+        }
+    ],
+    "responses": {
+        "200": {
+            "description": "Attendance check result",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "match": {"type": "boolean"},
+                    "email": {"type": "string", "description": "Email of the matched user (if match is true)"},
+                    "message": {"type": "string", "description": "Message if no match found (if match is false)"}
+                }
+            }
+        },
+        "400": {
+            "description": "Bad request - Image required or no face found"
+        },
+        "500": {
+            "description": "Internal server error"
+        }
+    }
+})
 def check_attendance():
     try:
         file = request.files.get("image")
