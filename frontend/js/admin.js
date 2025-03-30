@@ -1,4 +1,5 @@
 document.addEventListener("DOMContentLoaded", async function () {
+    // DOM Elements
     const statsTable = document.getElementById("stats-table");
     const statsBody = document.getElementById("stats-body");
     const statusMessage = document.getElementById("status-message");
@@ -8,16 +9,37 @@ document.addEventListener("DOMContentLoaded", async function () {
     const video = document.getElementById("admin-video");
     const canvas = document.getElementById("admin-canvas");
     const captureBtn = document.getElementById("capture-attendance-btn");
+    const stopCameraBtn = document.getElementById("stop-camera-btn");
     const statusText = document.getElementById("attendance-status");
+    const logoutBtn = document.getElementById("logout-btn");
+    
+    // Create attendance results container if it doesn't exist
+    let attendanceResults = document.getElementById("attendance-results");
+    if (!attendanceResults) {
+        attendanceResults = document.createElement("div");
+        attendanceResults.id = "attendance-results";
+        videoContainer.appendChild(attendanceResults);
+    }
+    
+    // Stream reference to stop camera
+    let mediaStream = null;
 
+    // Check if admin is logged in
     const adminEmail = sessionStorage.getItem("email");
     if (!adminEmail) {
         statusMessage.textContent = "Unauthorized. Please log in as admin.";
         return;
     }
 
-    // Fetch and show stats on button click
-    showStatsBtn.addEventListener("click", async () => {
+    // Event Listeners
+    showStatsBtn.addEventListener("click", fetchAndDisplayStats);
+    startAttendanceBtn.addEventListener("click", startWebcam);
+    stopCameraBtn.addEventListener("click", stopWebcam);
+    captureBtn.addEventListener("click", captureAndCheckAttendance);
+    logoutBtn.addEventListener("click", logout);
+    
+    // Functions
+    async function fetchAndDisplayStats() {
         showStatsBtn.disabled = true;
         try {
             const response = await fetch(`http://localhost:5000/admin/stats?email=${adminEmail}`);
@@ -25,6 +47,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
             if (!response.ok) {
                 statusMessage.textContent = data.message || "Failed to fetch stats.";
+                showStatsBtn.disabled = false;
                 return;
             }
 
@@ -43,28 +66,67 @@ document.addEventListener("DOMContentLoaded", async function () {
                 statsBody.appendChild(row);
             });
 
-
-            statsTable.style.display = "table";
+            statsTable.classList.remove("hidden");
         } catch (error) {
             statusMessage.textContent = "Error fetching data.";
             console.error("Fetch error:", error);
+        } finally {
+            showStatsBtn.disabled = false;
         }
-    });
-
-    // Webcam access for attendance
+    }
+    
     async function startWebcam() {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            // Check if camera is already running
+            if (mediaStream) {
+                return;
+            }
+            
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: true
+            });
+            
             video.srcObject = stream;
-            videoContainer.style.display = "block";
+            mediaStream = stream;
+            videoContainer.classList.remove("hidden");
             statusText.textContent = "Webcam started. Ready to capture.";
+            
+            // Show/hide buttons
+            startAttendanceBtn.style.display = "none";
         } catch (err) {
             statusText.textContent = "Failed to access webcam.";
             console.error(err);
         }
     }
+    
+    function stopWebcam() {
+        if (mediaStream) {
+            // Stop all tracks
+            mediaStream.getTracks().forEach(track => track.stop());
+            mediaStream = null;
+            
+            // Clear video source
+            video.srcObject = null;
+            
+            // Show/hide buttons
+            startAttendanceBtn.style.display = "inline-block";
+            
+            // Hide video container
+            videoContainer.classList.add("hidden");
+            
+            // Clear status
+            statusText.textContent = "";
+            
+            // Clear attendance results
+            attendanceResults.innerHTML = "";
+        }
+    }
 
     async function captureAndCheckAttendance() {
+        if (!mediaStream) {
+            return;
+        }
+        
         const ctx = canvas.getContext("2d");
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -75,20 +137,67 @@ document.addEventListener("DOMContentLoaded", async function () {
             formData.append("image", blob, "attendance.jpg");
 
             statusText.textContent = "Processing...";
+            attendanceResults.innerHTML = ''; // Clear previous results
 
             try {
                 const response = await fetch("http://localhost:5001/verify-face", {
-
                     method: "POST",
                     body: formData,
                 });
 
                 const data = await response.json();
 
-                if (response.ok && data.match) {
-                    statusText.textContent = `✅ ${data.email} marked present!`;
+                if (response.ok) {
+                    // Display total faces detected
+                    const facesDetectedText = document.createElement("p");
+                    facesDetectedText.textContent = `Faces detected: ${data.total_faces_detected || 0}`;
+                    attendanceResults.appendChild(facesDetectedText);
+                    
+                    if (data.match && data.matched_users && data.matched_users.length > 0) {
+                        // Create attendance table
+                        const table = document.createElement("table");
+                        table.className = "attendance-table";
+                        table.innerHTML = `
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Student ID</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendance-table-body"></tbody>
+                        `;
+                        attendanceResults.appendChild(table);
+                        
+                        const tableBody = document.getElementById("attendance-table-body");
+                        
+                        // Format current date and time
+                        const now = new Date();
+                        const dateTimeStr = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+                        
+                        // Add each matched user to the table
+                        data.matched_users.forEach(user => {
+                            const row = document.createElement("tr");
+                            row.innerHTML = `
+                                <td>${user.name || "Unknown"}</td>
+                                <td>${user.studentId || "N/A"}</td>
+                                <td>${user.email}</td>
+                                <td>Present</td>
+                            `;
+                            tableBody.appendChild(row);
+                        });
+                        
+                        statusText.textContent = `Marked ${data.matched_users.length} student(s) present!`;
+                    } else {
+                        if (data.total_faces_detected > 0) {
+                            statusText.textContent = "Faces detected but no registered students found.";
+                        } else {
+                            statusText.textContent = "No faces detected in the image.";
+                        }
+                    }
                 } else {
-                    statusText.textContent = "❌ No matching face found.";
+                    statusText.textContent = data.error || "Error during attendance check.";
                 }
             } catch (error) {
                 console.error("Error checking attendance:", error);
@@ -96,9 +205,15 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
         }, "image/jpeg");
     }
-
-    startAttendanceBtn.addEventListener("click", startWebcam);
-    captureBtn.addEventListener("click", captureAndCheckAttendance);
+    
+    function logout() {
+        // Clear session storage
+        sessionStorage.removeItem("email");
+        sessionStorage.removeItem("role");
+        
+        // Redirect to login page
+        window.location.href = "../index.html";
+    }
 });
 
 async function deleteUser(userEmail) {

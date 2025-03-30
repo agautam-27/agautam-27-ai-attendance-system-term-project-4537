@@ -7,11 +7,16 @@
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/adminstyle.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
     <div class="admin-container">
-        <h2>Admin Dashboard</h2>
+        <div class="admin-header">
+            <h2>Admin Dashboard</h2>
+            <button id="logout-btn" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+        
         <p id="status-message"></p>
 
         <div class="button-group">
@@ -21,9 +26,13 @@
 
         <div id="video-container" class="video-box hidden">
             <video id="admin-video" autoplay></video>
-            <button id="capture-attendance-btn">Capture Face</button>
+            <div class="video-controls">
+                <button id="capture-attendance-btn">Capture Face</button>
+                <button id="stop-camera-btn" class="stop-btn">Stop Camera</button>
+            </div>
             <canvas id="admin-canvas" class="hidden"></canvas>
             <p id="attendance-status"></p>
+            <!-- Attendance results will appear here -->
         </div>
 
         <table id="stats-table" class="hidden">

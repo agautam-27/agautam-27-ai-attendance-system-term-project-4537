@@ -1,27 +1,61 @@
-/* Centering the content */
 body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f8f9fa;
+    color: #333;
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: flex-start;  
     height: 100vh;
-    background-color: #eef2f7;
+    margin: 0;
+    overflow-y: auto;  
 }
 
-/* Styling the dashboard title */
-h2 {
-    color: #333;
-    font-size: 24px;
+.user-container {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    max-width: 600px;
+    text-align: center;
+    margin-top: 20px; 
+    position: relative; /* For absolute positioning of logout button */
+}
+
+.user-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
     margin-bottom: 20px;
 }
 
-/* Styling the profile info */
+h2 {
+    margin-bottom: 15px;
+}
+
+.logout-btn {
+    background-color: #dc3545;
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 7px 12px;
+    font-size: 14px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.logout-btn:hover {
+    background-color: #c82333;
+}
+
 #profile-info {
-    background: white;
+    background: #f8f9fa;
     padding: 15px;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 280px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     text-align: left;
     margin-bottom: 20px;
 }
@@ -31,44 +65,98 @@ h2 {
     font-size: 16px;
 }
 
-/* Video container styling */
-#video-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    width: 500px;
+.button-group {
+    margin: 10px 0;
 }
 
-#video {
-    width: 100%;
-    border-radius: 5px;
-    margin-bottom: 10px;
-}
-
-/* Styling the scan button */
-#capture-btn {
-    width: 100%;
-    padding: 10px;
-    background: #28a745;
+.btn {
+    padding: 10px 15px;
+    background: #007BFF;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 16px;
+    margin: 5px;
+    transition: 0.3s ease;
+}
+
+.btn:hover {
+    background: #0056b3;
+}
+
+.stop-btn {
+    background-color: #dc3545;
+    padding: 10px 15px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 5px;
+    transition: 0.3s ease;
+}
+
+.stop-btn:hover {
+    background-color: #c82333;
+}
+
+.video-box {
+    margin-top: 15px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.video-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
     margin-top: 10px;
 }
 
-#capture-btn:hover {
-    background: #218838;
+video {
+    width: 320px;
+    height: 240px;
+    margin: 0 auto;
+    border-radius: 8px;
+    object-fit: cover;
 }
 
-/* Status message styling */
 #status-message {
     margin-top: 10px;
+    padding: 8px;
     font-size: 14px;
-    color: #555;
+    border-radius: 4px;
+}
+
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.hidden {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .user-container {
+        width: 95%;
+    }
+    
+    .user-header {
+        flex-direction: column;
+    }
+    
+    .logout-btn {
+        position: static;
+        margin-top: 10px;
+    }
 }

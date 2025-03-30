@@ -19,6 +19,15 @@ body {
     max-width: 800px;
     text-align: center;
     margin-top: 20px; 
+    position: relative; /* For absolute positioning of logout button */
+}
+
+.admin-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    margin-bottom: 20px;
 }
 
 h2 {
@@ -49,6 +58,27 @@ button:hover {
     background: #0056b3;
 }
 
+.logout-btn {
+    background-color: #dc3545;
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 7px 12px;
+    font-size: 14px;
+}
+
+.logout-btn:hover {
+    background-color: #c82333;
+}
+
+.stop-btn {
+    background-color: #dc3545;
+}
+
+.stop-btn:hover {
+    background-color: #c82333;
+}
+
 .video-box {
     margin-top: 15px;
     padding: 10px;
@@ -58,18 +88,31 @@ button:hover {
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
 }
 
+.video-controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
 video {
-    width: 100%;
-    max-width: 400px;
+    width: 320px;
+    height: 240px;
+    margin: 0 auto;
     border-radius: 8px;
+    object-fit: cover;
 }
 
 table {
     width: 100%;
-    margin-top: 40px; 
+    margin-top: 20px; 
     border-collapse: collapse;
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-    overflow: auto;
+}
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
 }
 
 th, td {
@@ -87,15 +130,56 @@ th {
 }
 
 td button {
-    background: red;
+    background: #dc3545;
     padding: 5px 10px;
     font-size: 0.9em;
+    margin: 2px;
 }
 
 td button:hover {
-    background: darkred;
+    background: #c82333;
 }
 
 .hidden {
-    display: none;
+    display: none !important;
+}
+
+/* Attendance table styles */
+.attendance-table {
+    width: 100%;
+    margin-top: 15px;
+    border-collapse: collapse;
+}
+
+.attendance-table th, 
+.attendance-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+.attendance-table th {
+    background-color: #007BFF;
+    color: white;
+}
+
+#attendance-results {
+    margin-top: 15px;
+    width: 100%;
+    overflow-x: auto;
+}
+
+@media (max-width: 768px) {
+    .admin-container {
+        width: 95%;
+    }
+    
+    .admin-header {
+        flex-direction: column;
+    }
+    
+    .logout-btn {
+        position: static;
+        margin-top: 10px;
+    }
 }
