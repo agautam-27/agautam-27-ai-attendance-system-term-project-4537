@@ -140,7 +140,7 @@ app.post("/login", async (req, res) => {
         });
 
          // change expiration time to any time you want for testing        
-        const token = jwt.sign({email: email}, JWT_SECRET, {expiresIn: '60s'});
+        const token = jwt.sign({email: email}, JWT_SECRET, {expiresIn: '300s'});
         
         res.status(200).json({
             token: token,

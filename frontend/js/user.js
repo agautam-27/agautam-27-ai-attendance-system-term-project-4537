@@ -214,7 +214,13 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Add the new function here, inside the DOMContentLoaded block
         async function updateApiCountDisplay() {
             try {
-                const response = await fetch(`http://localhost:5000/dashboard?email=${email}`);
+                const response = await fetch(`http://localhost:5000/dashboard?email=${email}`, {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+                
                 const data = await response.json();
                 
                 if (response.ok) {

@@ -57,8 +57,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/register", {
-                //const response = await fetch("http://localhost:5000/register", {
+            //const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/register", {
+                const response = await fetch("http://localhost:5000/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(requestBody),
