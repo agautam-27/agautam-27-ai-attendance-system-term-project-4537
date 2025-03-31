@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
         //"http://localhost:5000/reset-password"
         //"https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/reset-password"
         try {
-            const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/reset-password", {
+            const response = await fetch("http://localhost:5000/reset-password", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, token, newPassword }),

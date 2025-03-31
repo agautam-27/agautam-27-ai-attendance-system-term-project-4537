@@ -145,10 +145,11 @@ document.addEventListener("DOMContentLoaded", async function () {
     
     async function fetchAndDisplayUserStats() {
         try {
+            const tokenLocalStorage = getToken();
             const response = await fetch(`http://localhost:5000/admin/stats?email=${adminEmail}`, {
                 method: "GET",
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    Authorization: `Bearer ${tokenLocalStorage}`,
                 }
             });
             const data = await response.json();
@@ -198,11 +199,12 @@ document.addEventListener("DOMContentLoaded", async function () {
     
     async function fetchAndDisplayApiStats() {
         try {
+            const tokenLocalStorage = getToken();
             refreshApiStatsBtn.disabled = true;
             const response = await fetch(`http://localhost:5000/admin/api-stats?email=${adminEmail}`, {
                 method: "GET",
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    Authorization: `Bearer ${tokenLocalStorage}`,
                 },
             });
             const data = await response.json();
@@ -375,14 +377,18 @@ document.addEventListener("DOMContentLoaded", async function () {
 });
 
 async function deleteUser(userEmail) {
-    const adminEmail = sessionStorage.getItem("email");
+    const tokenLocalStorage = getToken();
+    const decoded = jwtDecode(tokenLocalStorage);
+    const adminEmail = decoded?.email;
 
     if (!confirm(messages.confirmDeleteUser.replace("{email}", userEmail))) return;
 
     try {
+        console.log("admin email in delete: ", adminEmail);
+        console.log("user email in delete: ", userEmail);
         const response = await fetch("http://localhost:5000/admin/delete-user", {
             method: "DELETE",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${tokenLocalStorage}` },
             body: JSON.stringify({ adminEmail, userEmail }),
         });
 
@@ -396,14 +402,18 @@ async function deleteUser(userEmail) {
 }
 
 async function updateUserRole(userEmail) {
-    const adminEmail = sessionStorage.getItem("email");
+    const tokenLocalStorage = getToken();
+    const decoded = jwtDecode(tokenLocalStorage);
+    const adminEmail = decoded?.email;
 
     if (!confirm(messages.confirmMakeAdmin.replace("{email}", userEmail))) return;
 
     try {
+        console.log("admin email in update: ", adminEmail);
+        console.log("user email in update: ", userEmail);
         const response = await fetch("http://localhost:5000/admin/update-role", {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${tokenLocalStorage}` },
             body: JSON.stringify({ adminEmail, userEmail }),
         });
 

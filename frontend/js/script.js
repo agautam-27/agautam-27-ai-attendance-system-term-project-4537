@@ -140,8 +140,8 @@ document.addEventListener("DOMContentLoaded", function () {
         resetError.textContent = "";
 
         try {
-            const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/request-password-reset", {
-            // const response = await fetch("http://localhost:5000/request-password-reset", {
+            // const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/request-password-reset", {
+            const response = await fetch("http://localhost:5000/request-password-reset", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email }),
