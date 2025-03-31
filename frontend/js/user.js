@@ -171,7 +171,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             setStatusMessage(messages.registeringFace, "info");
     
             try {
-                const response = await fetch("http://localhost:5001/register-face", {
+                const response = await fetch("  https://58f1-2001-569-598c-9500-5c47-b46e-c4bf-f43.ngrok-free.app/register-face", {
                     method: "POST",
                     body: formData
                 });
