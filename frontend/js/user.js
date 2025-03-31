@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     // Get user API count
     try {
-        const response = await fetch(`http://localhost:5000/dashboard?email=${email}`, {
+        const response = await fetch(`https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/dashboard?email=${email}`, {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${token}`,
@@ -214,7 +214,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         // Add the new function here, inside the DOMContentLoaded block
         async function updateApiCountDisplay() {
             try {
-                const response = await fetch(`http://localhost:5000/dashboard?email=${email}`, {
+                const response = await fetch(`https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/dashboard?email=${email}`, {
                     method: "GET",
                     headers: {
                         Authorization: `Bearer ${token}`,

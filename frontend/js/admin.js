@@ -98,13 +98,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Stream reference to stop camera
     let mediaStream = null;
 
-    // Check if admin is logged in
-    // const adminEmail = sessionStorage.getItem("email");
-    // if (!adminEmail) {
-    //     statusMessage.textContent = "Unauthorized. Please log in as admin.";
-    //     return;
-    // }
-
+    // Get admin email from token
     const token = getToken();
     let adminEmail = null;
 
@@ -146,7 +140,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     async function fetchAndDisplayUserStats() {
         try {
             const tokenLocalStorage = getToken();
-            const response = await fetch(`http://localhost:5000/admin/stats?email=${adminEmail}`, {
+            const response = await fetch(`https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/admin/stats?email=${adminEmail}`, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${tokenLocalStorage}`,
@@ -201,7 +195,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         try {
             const tokenLocalStorage = getToken();
             refreshApiStatsBtn.disabled = true;
-            const response = await fetch(`http://localhost:5000/admin/api-stats?email=${adminEmail}`, {
+            const response = await fetch(`https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/admin/api-stats?email=${adminEmail}`, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${tokenLocalStorage}`,
@@ -367,9 +361,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
     
     function logout() {
-        // Clear session storage
-        sessionStorage.removeItem("email");
-        sessionStorage.removeItem("role");
+        // Clear storage
+        localStorage.clear();
+        sessionStorage.clear();
         
         // Redirect to login page
         window.location.href = "../index.html";
@@ -377,18 +371,29 @@ document.addEventListener("DOMContentLoaded", async function () {
 });
 
 async function deleteUser(userEmail) {
-    const tokenLocalStorage = getToken();
-    const decoded = jwtDecode(tokenLocalStorage);
-    const adminEmail = decoded?.email;
+    // Get admin email from the JWT token
+    const token = localStorage.getItem('token');
+    let adminEmail = null;
+    
+    try {
+        const decoded = jwtDecode(token);
+        adminEmail = decoded?.email;
+    } catch(error) {
+        console.error("Error decoding token:", error);
+        alert("Authentication error. Please log in again.");
+        window.location.href = "../index.html";
+        return;
+    }
 
     if (!confirm(messages.confirmDeleteUser.replace("{email}", userEmail))) return;
 
     try {
-        console.log("admin email in delete: ", adminEmail);
-        console.log("user email in delete: ", userEmail);
-        const response = await fetch("http://localhost:5000/admin/delete-user", {
+        const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/admin/delete-user", {
             method: "DELETE",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${tokenLocalStorage}` },
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
             body: JSON.stringify({ adminEmail, userEmail }),
         });
 
@@ -402,18 +407,29 @@ async function deleteUser(userEmail) {
 }
 
 async function updateUserRole(userEmail) {
-    const tokenLocalStorage = getToken();
-    const decoded = jwtDecode(tokenLocalStorage);
-    const adminEmail = decoded?.email;
+    // Get admin email from the JWT token
+    const token = localStorage.getItem('token');
+    let adminEmail = null;
+    
+    try {
+        const decoded = jwtDecode(token);
+        adminEmail = decoded?.email;
+    } catch(error) {
+        console.error("Error decoding token:", error);
+        alert("Authentication error. Please log in again.");
+        window.location.href = "../index.html";
+        return;
+    }
 
     if (!confirm(messages.confirmMakeAdmin.replace("{email}", userEmail))) return;
 
     try {
-        console.log("admin email in update: ", adminEmail);
-        console.log("user email in update: ", userEmail);
-        const response = await fetch("http://localhost:5000/admin/update-role", {
+        const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/admin/update-role", {
             method: "PATCH",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${tokenLocalStorage}` },
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
             body: JSON.stringify({ adminEmail, userEmail }),
         });
 

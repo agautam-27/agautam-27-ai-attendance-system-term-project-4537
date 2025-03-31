@@ -57,8 +57,8 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            //const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/register", {
-                const response = await fetch("http://localhost:5000/register", {
+            const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/register", {
+                // const response = await fetch("http://localhost:5000/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(requestBody),
@@ -95,8 +95,8 @@ document.addEventListener("DOMContentLoaded", function () {
         loginError.textContent = "";
 
         try {
-            // const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/login", {
-            const response = await fetch("http://localhost:5000/login", {
+            const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/login", {
+            // const response = await fetch("http://localhost:5000/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
@@ -140,8 +140,8 @@ document.addEventListener("DOMContentLoaded", function () {
         resetError.textContent = "";
 
         try {
-            // const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/request-password-reset", {
-            const response = await fetch("http://localhost:5000/request-password-reset", {
+            const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/request-password-reset", {
+            // const response = await fetch("http://localhost:5000/request-password-reset", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email }),

@@ -8,10 +8,10 @@ const checkAuth = require("./utils/checkAuth"); // Import the checkAuth middlewa
 const messages = require("../messages/lang/en");
 
 //uncomment the line below when you push to github, so then it uses hosted services
-// const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
+const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
 
 // comment the line out below when u push, when testing locally keep it uncommented 
-const serviceAccount = require("../database/serviceAccountKey.json");
+// const serviceAccount = require("../database/serviceAccountKey.json");
 
 const crypto = require("crypto"); 
 
@@ -30,7 +30,11 @@ const db = admin.firestore();
 // Create Express app instance first
 const app = express();
 
-// In index.js, add this before apiStats definition
+// Core middleware
+app.use(cors()); // Allows frontend to connect
+app.use(express.json()); // Parses JSON requests
+
+// Define endpoint mappings for API stats
 const endpointNames = {
     "/register": "/API/v1/users/register",
     "/login": "/API/v1/auth/login",
@@ -42,29 +46,46 @@ const endpointNames = {
     "/admin/delete-user": "/API/v1/admin/users/delete",
     "/admin/update-role": "/API/v1/admin/users/update-role",
     "/": "/API/v1/status"
-  };
-
-
-  const apiStats = {
-    endpoints: {},
-    trackEndpoint: function(method, endpoint) {
-        // Map the raw endpoint to a more structured name
-        const displayEndpoint = endpointNames[endpoint] || endpoint;
-        const key = `${method} ${displayEndpoint}`;
-        if (!this.endpoints[key]) {
-            this.endpoints[key] = 0;
-        }
-        this.endpoints[key]++;
-    }
 };
 
-// Middleware
-app.use(cors()); // Allows frontend to connect
-app.use(express.json()); // Parses JSON requests
-
-// Add tracking middleware after other middleware
-app.use((req, res, next) => {
-    apiStats.trackEndpoint(req.method, req.path);
+// Add tracking middleware after core middleware
+app.use(async (req, res, next) => {
+    try {
+        const method = req.method;
+        const endpoint = req.path;
+        
+        // Map the raw endpoint to a more structured name 
+        const displayEndpoint = endpointNames[endpoint] || `/API/v1${endpoint}`;
+        
+        // Create a valid document ID by replacing slashes with hyphens
+        const key = `${method}_${displayEndpoint.replace(/\//g, '-')}`;
+        
+        // Update the API stats in Firestore
+        const statsRef = db.collection("api_stats").doc(key);
+        const statsDoc = await statsRef.get();
+        
+        if (statsDoc.exists) {
+            // Increment the count
+            await statsRef.update({
+                method: method,
+                endpoint: displayEndpoint,
+                count: admin.firestore.FieldValue.increment(1),
+                lastAccessed: admin.firestore.FieldValue.serverTimestamp()
+            });
+        } else {
+            // Create a new document
+            await statsRef.set({
+                method: method,
+                endpoint: displayEndpoint,
+                count: 1,
+                created: admin.firestore.FieldValue.serverTimestamp(),
+                lastAccessed: admin.firestore.FieldValue.serverTimestamp()
+            });
+        }
+    } catch (error) {
+        console.error("Error tracking API usage:", error);
+    }
+    
     next();
 });
 
@@ -139,7 +160,7 @@ app.post("/login", async (req, res) => {
             apiCount: admin.firestore.FieldValue.increment(1)
         });
 
-         // change expiration time to any time you want for testing        
+        // Token expiration time (keep the team's 300s setting)
         const token = jwt.sign({email: email}, JWT_SECRET, {expiresIn: '300s'});
         
         res.status(200).json({
@@ -203,18 +224,29 @@ app.get("/admin/api-stats", checkAuth, async (req, res) => {
             return res.status(403).json({ message: messages.unauthorizedAdmin });
         }
 
-        // Format the endpoint stats for display
-        const endpointStats = Object.entries(apiStats.endpoints).map(([key, count]) => {
-            const [method, endpoint] = key.split(' ');
-            return {
-                method,
-                endpoint,
-                count
-            };
+        // Get API stats from Firestore
+        const statsSnapshot = await db.collection("api_stats").get();
+        
+        // Log for debugging
+        console.log("API Stats snapshot size:", statsSnapshot.size);
+        
+        const endpoints = [];
+        
+        statsSnapshot.forEach(doc => {
+            const data = doc.data();
+            console.log("API stat document:", doc.id, data);  // Debug logging
+            
+            endpoints.push({
+                method: data.method,
+                endpoint: data.endpoint,
+                count: data.count
+            });
         });
 
-        res.status(200).json({ endpoints: endpointStats });
+        console.log("Sending endpoints:", endpoints);  // Debug logging
+        res.status(200).json({ endpoints });
     } catch (error) {
+        console.error("Error fetching API stats:", error);
         res.status(500).json({ message: messages.apiStatsFail });
     }
 });
@@ -283,8 +315,8 @@ app.post("/request-password-reset", async (req, res) => {
     // const resetLink = `https://face-detection-attendance4537.netlify.app/frontend/pages/resetpassword.html?token=${token}&email=${email}`;
     // const resetLink = `https://face-detection-attendance4537.netlify.app/frontend/pages/resetpassword.html?token=${token}&email=${email}`;
     const resetLink = `https://face-detection-attendance4537.netlify.app/resetpassword.html?token=${token}&email=${email}`;
+    
 
-    // const resetLink = `/resetpassword.html?token=${token}&email=${email}`;
     console.log("RESET LINK (Send via email):", resetLink);
 
     const emailResponse = await sendResetEmail(email, resetLink);
