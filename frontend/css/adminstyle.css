@@ -267,3 +267,39 @@ td button:first-child:hover {
         text-align: center;
     }
 }
+
+/* Add this to the end of your adminstyle.css file */
+
+/* Special class to hide content until authentication */
+.auth-hidden {
+    display: none !important;
+}
+
+/* Optional: Add a loading indicator that shows while authentication is checked */
+.auth-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f8f9fa;
+    z-index: 9999;
+}
+
+.auth-loading:after {
+    content: "";
+    width: 50px;
+    height: 50px;
+    border: 6px solid #e2e8f0;
+    border-top: 6px solid #4299e1;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

@@ -54,6 +54,13 @@ function checkAdminAccess() {
             window.location.href = "../index.html";
             return false;
         }
+        
+        // User is authorized, make admin content visible and remove loading indicator
+        document.querySelector('.admin-container').classList.remove('auth-hidden');
+        const loadingElement = document.getElementById('auth-loading');
+        if (loadingElement) {
+            loadingElement.style.display = 'none';
+        }
         return true;
     } catch (error) {
         console.error("Error checking admin access:", error);
@@ -80,6 +87,12 @@ function checkTokenAndRedirect(){
 }
 
 document.addEventListener("DOMContentLoaded", async function () {
+    // Hide admin content until authentication is confirmed
+    const adminContainer = document.querySelector('.admin-container');
+    if (adminContainer) {
+        adminContainer.classList.add('auth-hidden');
+    }
+    
     // First check token expiry and admin role
     checkTokenAndRedirect();
     
@@ -333,7 +346,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             attendanceResults.innerHTML = ''; // Clear previous results
 
             try {
-                const response = await fetch("https://9fd2-2001-569-598c-9500-1d72-ae0b-6e7d-b7.ngrok-free.app/verify-face", {
+                const response = await fetch("   https://9fd2-2001-569-598c-9500-1d72-ae0b-6e7d-b7.ngrok-free.app/verify-face", {
                     method: "POST",
                     body: formData,
                 });
