@@ -10,6 +10,10 @@ const transporter = nodemailer.createTransport({
 });
 
 async function sendResetEmail(email, resetLink){
+    console.log("Setting up email options for:", email);
+    console.log("Using email credentials:", process.env.EMAIL_USER ? "Email user set" : "EMAIL_USER MISSING", 
+                process.env.EMAIL_PASS ? "Email password set" : "EMAIL_PASS MISSING");
+    
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
@@ -20,13 +24,20 @@ async function sendResetEmail(email, resetLink){
             <p>If you did not request this, please ignore this email.</p>
         `,
     }
+    
     try{
+        console.log("Attempting to send email with nodemailer");
         await transporter.sendMail(mailOptions);
-        console.log('Email sent to:', email);
+        console.log('Email sent successfully to:', email);
         return { success: true, message: "Email sent successfully." };
     } catch(error){
-        console.log('Error sending email:', error);
-        return { success: false, message: "Error sending email" };
+        console.error('Error sending email:', error);
+        // More detailed error info
+        return { 
+            success: false, 
+            message: `Error sending email: ${error.message}`,
+            error: error.toString()
+        };
     }
 }
 

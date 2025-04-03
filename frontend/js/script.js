@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         try {
             const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/login", {
-            // const response = await fetch("http://localhost:5000/login", {
+                // const response = await fetch("http://localhost:5000/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
@@ -104,11 +104,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const data = await response.json();
             console.log("Token before stored: ", data.token); // Log the token before storing
-            
+
             if (response.ok) {
                 localStorage.setItem("token", data.token); // Store the token in local storage
                 console.log("Token after stored in localStorage: ", data.token); // Log the token after storing
-                
+
                 if (data.role === "admin") {
                     window.location.href = "pages/admin.html";
                 } else {
@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Update the forgot password form handler
+    // In script.js, modify the forgot password form handler
     document.getElementById("forgot-password-form").addEventListener("submit", async function (e) {
         e.preventDefault();
         const email = document.getElementById("reset-email").value;
@@ -140,29 +140,41 @@ document.addEventListener("DOMContentLoaded", function () {
         resetError.textContent = "";
 
         try {
+            // Show loading message
+            resetError.style.display = "block";
+            resetError.textContent = "Processing request...";
+
             const response = await fetch("https://agautam-27-ai-attendance-system-term-3fnn.onrender.com/request-password-reset", {
-            // const response = await fetch("http://localhost:5000/request-password-reset", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email }),
             });
 
             const data = await response.json();
+            console.log("Password reset response:", data);
 
             if (response.ok) {
-                // Show success message
-                alert(messages.resetEmailSent);
+                resetError.style.color = "green";
+                resetError.textContent = "Password reset email sent! Check your inbox. (If you don't see it, please check your spam folder.)";
+
+                // Display any debug information in the console
+                if (data.debug) {
+                    console.log("Server debug info:", data.debug);
+                }
             } else {
+                resetError.style.color = "red";
                 resetError.textContent = data.message || messages.resetEmailFailed;
-                resetError.style.display = "block";
+
+                // Display any debug information in the console
+                if (data.debug) {
+                    console.error("Server error:", data.debug);
+                }
             }
         } catch (error) {
+            resetError.style.color = "red";
             resetError.textContent = messages.connectionError;
-            resetError.style.display = "block";
-            console.error("Reset error:", error);
+            console.error("Reset request error:", error);
         }
-
-  
     });
 });
 
@@ -174,9 +186,9 @@ document.addEventListener("DOMContentLoaded", function () {
     function toggleStudentIdField() {
         const selectedRole = document.querySelector('input[name="role"]:checked').value;
         if (selectedRole === "admin") {
-            studentIdField.style.display = "none"; 
+            studentIdField.style.display = "none";
         } else {
-            studentIdField.style.display = "block"; 
+            studentIdField.style.display = "block";
         }
     }
 
@@ -197,14 +209,14 @@ document.addEventListener("DOMContentLoaded", function () {
         e.preventDefault();
         loginContainer.classList.add("hidden");
         registerContainer.classList.remove("hidden");
-        registerStyle.removeAttribute("disabled");  
+        registerStyle.removeAttribute("disabled");
     });
 
     showLoginLink.addEventListener("click", function (e) {
         e.preventDefault();
         registerContainer.classList.add("hidden");
         loginContainer.classList.remove("hidden");
-        registerStyle.setAttribute("disabled", "true");  
+        registerStyle.setAttribute("disabled", "true");
     });
 });
 

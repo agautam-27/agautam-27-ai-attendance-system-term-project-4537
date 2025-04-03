@@ -295,43 +295,69 @@ app.get("/admin/stats",  checkAuth, async (req, res) => {
 });
 
 
-// Route to handle forgot password and generate token
 app.post("/request-password-reset", async (req, res) => {
+    console.log("Password reset request received for:", req.body.email);
     const { email } = req.body;
 
     if (!email) {
+        console.log("Email required error");
         return res.status(400).json({ message: messages.emailRequired });
     }
 
-    const userDoc = await db.collection("users").doc(email).get();
-    if (!userDoc.exists) {
-        return res.status(404).json({ message: messages.noEmailExists });
-    }
+    try {
+        // Check if user exists
+        console.log("Checking if user exists:", email);
+        const userDoc = await db.collection("users").doc(email).get();
+        if (!userDoc.exists) {
+            console.log("User not found:", email);
+            return res.status(404).json({ message: messages.noEmailExists });
+        }
+        console.log("User found, generating token");
 
-    // Generate a random token
-    const token = crypto.randomBytes(20).toString("hex");
+        // Generate token
+        const token = crypto.randomBytes(20).toString("hex");
+        console.log("Token generated:", token.substring(0, 5) + "...");
 
-    // Set token and expiry in Firestore
-    await db.collection("users").doc(email).update({
-        resetToken: token,
-        resetTokenExpiry: Date.now() + 3600000 // valid for 1 hour
-    });
+        // Save token to database
+        console.log("Saving token to database");
+        await db.collection("users").doc(email).update({
+            resetToken: token,
+            resetTokenExpiry: Date.now() + 3600000
+        });
+        console.log("Token saved successfully");
 
-    // Simulate sending email (for bonus: display this on frontend)
-    // const resetLink = `https://face-detection-attendance4537.netlify.app//frontend/pages/resetpassword.html?token=${token}&email=${email}`;
-    // const resetLink = `https://face-detection-attendance4537.netlify.app/frontend/pages/resetpassword.html?token=${token}&email=${email}`;
-    // const resetLink = `https://face-detection-attendance4537.netlify.app/frontend/pages/resetpassword.html?token=${token}&email=${email}`;
-    // const resetLink = `https://face-detection-attendance4537.netlify.app/pages/resetpassword.html?token=${token}&email=${email}`;
-    const resetLink = `https://face-detection-attendance4537.netlify.app/frontend/pages/resetpassword.html?token=${token}&email=${email}`;
-    
+        // Generate reset link - UPDATED WITH FRONTEND PATH
+        const resetLink = `https://face-detection-attendance4537.netlify.app/frontend/pages/resetpassword.html?token=${token}&email=${email}`;
+        console.log("Reset link generated:", resetLink);
 
-    console.log("RESET LINK (Send via email):", resetLink);
-
-    const emailResponse = await sendResetEmail(email, resetLink);
-    if(emailResponse.success){
-        return res.status(200).json({ message: messages.passwordEmailSent });
-    } else{
-        return res.status(500).json({ message: messages.errorSendingEmail });
+        // Send email
+        console.log("Attempting to send email");
+        try {
+            const emailResponse = await sendResetEmail(email, resetLink);
+            console.log("Email service response:", emailResponse);
+            
+            if(emailResponse.success){
+                return res.status(200).json({ message: messages.passwordEmailSent });
+            } else{
+                console.error("Email sending failed:", emailResponse.message);
+                return res.status(500).json({ 
+                    message: messages.errorSendingEmail,
+                    debug: emailResponse.message 
+                });
+            }
+        } catch (emailError) {
+            console.error("Error in email service:", emailError);
+            return res.status(500).json({ 
+                message: messages.errorSendingEmail,
+                debug: emailError.toString()
+            });
+        }
+    } catch (error) {
+        console.error("Database or general error:", error);
+        return res.status(500).json({ 
+            message: "Server error processing reset request",
+            debug: error.toString()
+        });
     }
 });
 
