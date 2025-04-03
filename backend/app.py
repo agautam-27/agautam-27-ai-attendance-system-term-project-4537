@@ -9,7 +9,6 @@ from ultralytics import YOLO
 import face_recognition
 from flasgger import Swagger, swag_from
 from datetime import datetime
-import time  # For performance monitoring
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -41,10 +40,6 @@ model = YOLO("yolov8n.pt")
 cred = credentials.Certificate("database/serviceAccountKey.json") #keep this comment only , only uncomment when testing local host
 firebase_admin.initialize_app(cred)
 db = firestore.client()
-
-# Global configuration
-FACE_RECOGNITION_TOLERANCE = 0.6  # Default is 0.6, lower is more strict, higher is more lenient
-MODEL_CONFIDENCE = 0.5  # Confidence threshold for YOLO model
 
 @app.route("/detect", methods=["POST"])
 @swag_from({
@@ -99,7 +94,7 @@ def detect_faces():
         img = cv2.imdecode(img, cv2.IMREAD_COLOR)
 
         # Perform face detection using YOLOv8
-        results = model.predict(source=img, conf=MODEL_CONFIDENCE, verbose=False)  # Added confidence threshold
+        results = model.predict(source=img)
 
         faces_detected = []
         for r in results:
@@ -168,14 +163,9 @@ def register_face():
         rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         # Get face encodings
-        face_locations = face_recognition.face_locations(rgb_img)
-        if len(face_locations) == 0:
-            return jsonify({"error": "No face found in image."}), 400
-            
-        # Get the encoding of the first face found
-        encodings = face_recognition.face_encodings(rgb_img, face_locations)
+        encodings = face_recognition.face_encodings(rgb_img)
         if len(encodings) == 0:
-            return jsonify({"error": "Failed to encode face."}), 400
+            return jsonify({"error": "No face found in image."}), 400
 
         # Save to Firestore
         db.collection("face_encodings").document(email).set({
@@ -183,13 +173,9 @@ def register_face():
         })
         
         # Update API count after successful face registration
-        try:
-            db.collection("users").document(email).update({
-                "apiCount": firestore.Increment(1)
-            })
-        except Exception as user_e:
-            print(f"Warning: Could not update API count: {user_e}")
-            # Continue with registration even if API count update fails
+        db.collection("users").document(email).update({
+            "apiCount": firestore.Increment(1)
+        })
 
         return jsonify({"message": "Face registered successfully!"})
 
@@ -244,7 +230,6 @@ def register_face():
     }
 })
 def verify_face():
-    start_time = time.time()
     try:
         file = request.files.get("image")
         if not file:
@@ -254,28 +239,20 @@ def verify_face():
         img = cv2.imdecode(img_bytes, cv2.IMREAD_COLOR)
         rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        # OPTIMIZATION: Set model parameters
-        # Detect face locations with optimized parameters
-        # Using the 'hog' model which is faster than 'cnn'
-        face_locations = face_recognition.face_locations(rgb_img, model="hog")
-        print(f"Face detection took {time.time() - start_time:.2f} seconds")
-        
+        # Detect face locations first
+        face_locations = face_recognition.face_locations(rgb_img)
         if not face_locations:
             return jsonify({"error": "No faces found in image."}), 400
 
-        # Encode faces - using already detected locations for efficiency
+        # Encode all faces in the image
         face_encodings = face_recognition.face_encodings(rgb_img, face_locations)
-        print(f"Face encoding took {time.time() - start_time:.2f} seconds")
-        
         if not face_encodings:
             return jsonify({"error": "Failed to encode faces."}), 400
 
         # Get all saved encodings from Firestore
-        start_db_time = time.time()
         saved_faces = list(db.collection("face_encodings").stream())
         if not saved_faces:
             return jsonify({"error": "No registered faces found in database."}), 404
-        print(f"Database fetch took {time.time() - start_db_time:.2f} seconds")
 
         # Prepare a dictionary of saved encodings
         saved_encodings = {}
@@ -286,28 +263,16 @@ def verify_face():
 
         # For storing matched users
         matched_users = []
-        matched_emails = set()  # To prevent duplicates
         
         # Get current date
         today = datetime.now().strftime("%Y-%m-%d")
 
-        # OPTIMIZATION: Batch comparison
-        # Convert saved_encodings to a list for batch processing
-        emails = list(saved_encodings.keys())
-        known_face_encodings = [saved_encodings[email] for email in emails]
-        
         # Compare each detected face against all saved faces
-        compare_start = time.time()
-        for i, face_encoding in enumerate(face_encodings):
-            # This does all comparisons at once with a specified tolerance
-            matches = face_recognition.compare_faces(known_face_encodings, face_encoding, tolerance=FACE_RECOGNITION_TOLERANCE)
-            
-            # Find matches
-            for j, match in enumerate(matches):
-                if match and emails[j] not in matched_emails:
-                    email = emails[j]
-                    matched_emails.add(email)  # Prevent duplicate matches
-                    
+        for face_encoding in face_encodings:
+            for email, saved_encoding in saved_encodings.items():
+                # Compare face using face_recognition
+                match = face_recognition.compare_faces([saved_encoding], face_encoding)[0]
+                if match:
                     # Get user data from Firestore
                     user_data = None
                     name = "Unknown"
@@ -321,12 +286,14 @@ def verify_face():
                             user_data = user_doc.to_dict()
                             name = user_data.get("name", "Unknown")
                             student_id = user_data.get("studentId", "")
+                            print(f"Found user data: {user_data}")
                             
                             # Update API count for this user
                             db.collection("users").document(email).update({
                                 "apiCount": firestore.Increment(1)
                             })
                         else:
+                            print(f"User document not found for email: {email}")
                             # As a fallback, try querying by email field
                             user_query = db.collection("users").where("email", "==", email).limit(1).get()
                             
@@ -334,6 +301,7 @@ def verify_face():
                                 user_data = user_query[0].to_dict()
                                 name = user_data.get("name", "Unknown")
                                 student_id = user_data.get("studentId", "")
+                                print(f"Found user data via query: {user_data}")
                                 
                                 # Update API count for this user
                                 query_doc = user_query[0].reference
@@ -341,9 +309,12 @@ def verify_face():
                                     "apiCount": firestore.Increment(1)
                                 })
                             else:
+                                print(f"User not found via query for email: {email}")
                                 name = email  # Use email as fallback
                     except Exception as e:
                         print(f"Error getting user data: {e}")
+                    
+                    print(f"User info - Email: {email}, Name: {name}, Student ID: {student_id}")
                     
                     # Add to matched users with full user info
                     matched_users.append({
@@ -353,7 +324,9 @@ def verify_face():
                     })
                     
                     # Create a valid document ID using student ID if available
+                    # If student ID is empty or None, use email as document ID
                     doc_id = student_id if student_id and student_id.strip() else email
+                    print(f"Using document ID: {doc_id}")
                     
                     # Log attendance for this user with additional info
                     try:
@@ -365,12 +338,14 @@ def verify_face():
                             "timestamp": firestore.SERVER_TIMESTAMP
                         }
                         
+                        print(f"Saving attendance data: {attendance_data}")
                         db.collection("attendance").document(doc_id).set(attendance_data)
+                        print(f"Successfully saved attendance with ID: {doc_id}")
                     except Exception as e:
                         print(f"Error saving attendance: {e}")
-                        
-        print(f"Face comparison took {time.time() - compare_start:.2f} seconds")
-        print(f"Total verification time: {time.time() - start_time:.2f} seconds")
+                    
+                    # Once we find a match for this face, move to the next face
+                    break
 
         if matched_users:
             return jsonify({
@@ -446,9 +421,8 @@ def check_attendance():
         img = cv2.imdecode(img_bytes, cv2.IMREAD_COLOR)
         rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        # OPTIMIZATION: Same as in verify_face
-        # Use 'hog' model which is faster
-        face_locations = face_recognition.face_locations(rgb_img, model="hog")
+        # Detect face locations first
+        face_locations = face_recognition.face_locations(rgb_img)
         if not face_locations:
             return jsonify({"error": "No faces found."}), 400
 
@@ -458,34 +432,24 @@ def check_attendance():
         # Get all saved encodings from Firestore
         saved_faces = list(db.collection("face_encodings").stream())
         
-        # OPTIMIZATION: Batch comparison approach
-        # Prepare lists for batch processing
-        emails = []
-        known_face_encodings = []
-        
+        # Prepare a dictionary of saved encodings
+        saved_encodings = {}
         for doc in saved_faces:
             email = doc.id
             data = doc.to_dict()
-            emails.append(email)
-            known_face_encodings.append(np.array(data["encoding"]))
+            saved_encodings[email] = np.array(data["encoding"])
             
         # For storing matched users
         matched_users = []
-        matched_emails = set()  # To prevent duplicates
         
-        # Compare each detected face against all saved faces at once
+        # Compare each detected face against all saved faces
         for face_encoding in face_encodings:
-            matches = face_recognition.compare_faces(known_face_encodings, face_encoding, tolerance=FACE_RECOGNITION_TOLERANCE)
-            
-            # Process matches
-            for i, match in enumerate(matches):
-                if match and emails[i] not in matched_emails:
-                    email = emails[i]
-                    matched_emails.add(email)
-                    
+            for email, saved_encoding in saved_encodings.items():
+                match = face_recognition.compare_faces([saved_encoding], face_encoding)[0]
+                if match:
                     # Get user data from Firestore
                     try:
-                        user_doc = db.collection("users").document(email).get()
+                        user_doc = db.collection("users").doc(email).get()
                         
                         if user_doc.exists:
                             user_data = user_doc.to_dict()
@@ -505,6 +469,7 @@ def check_attendance():
                         "name": name,
                         "studentId": student_id
                     })
+                    break
                     
         if matched_users:
             return jsonify({
@@ -524,5 +489,5 @@ def check_attendance():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5001))
+    port = int(os.environ.get("PORT", 5001))  # fallback to 5000
     app.run(host="0.0.0.0", port=port)
