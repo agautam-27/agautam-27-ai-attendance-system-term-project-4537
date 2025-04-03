@@ -333,23 +333,23 @@ app.post("/request-password-reset", async (req, res) => {
         // Send email
         console.log("Attempting to send email");
         try {
+            // Try to send email, but if it fails due to quota, still return success with the link
             const emailResponse = await sendResetEmail(email, resetLink);
             console.log("Email service response:", emailResponse);
             
-            if(emailResponse.success){
-                return res.status(200).json({ message: messages.passwordEmailSent });
-            } else{
-                console.error("Email sending failed:", emailResponse.message);
-                return res.status(500).json({ 
-                    message: messages.errorSendingEmail,
-                    debug: emailResponse.message 
-                });
-            }
-        } catch (emailError) {
-            console.error("Error in email service:", emailError);
-            return res.status(500).json({ 
-                message: messages.errorSendingEmail,
-                debug: emailError.toString()
+            // Even if email fails, return the link for testing
+            return res.status(200).json({ 
+                message: emailResponse.success ? 
+                    messages.passwordEmailSent : 
+                    "Email sending failed but reset link generated.",
+                resetLink: resetLink // Include the actual link
+            });
+        } catch (error) {
+            // Still return the link even if the email service throws an error
+            console.error("Email service error:", error);
+            return res.status(200).json({ 
+                message: "Email could not be sent due to daily limit, but you can use this link:",
+                resetLink: resetLink
             });
         }
     } catch (error) {
@@ -360,6 +360,7 @@ app.post("/request-password-reset", async (req, res) => {
         });
     }
 });
+
 
 app.post("/reset-password", async (req, res) => {
     const { email, token, newPassword } = req.body;

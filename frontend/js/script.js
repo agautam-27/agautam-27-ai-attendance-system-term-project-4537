@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // In script.js, modify the forgot password form handler
+    // Update the forgot password form handler
     document.getElementById("forgot-password-form").addEventListener("submit", async function (e) {
         e.preventDefault();
         const email = document.getElementById("reset-email").value;
@@ -154,12 +154,14 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("Password reset response:", data);
 
             if (response.ok) {
+                resetError.style.display = "block";
                 resetError.style.color = "green";
-                resetError.textContent = "Password reset email sent! Check your inbox. (If you don't see it, please check your spam folder.)";
 
-                // Display any debug information in the console
-                if (data.debug) {
-                    console.log("Server debug info:", data.debug);
+                if (data.resetLink) {
+                    // If a direct link is provided, show it
+                    resetError.innerHTML = `${data.message}<br><br>Reset Link: <a href="${data.resetLink}" target="_blank">Click here to reset password</a>`;
+                } else {
+                    resetError.textContent = data.message || messages.resetEmailSent;
                 }
             } else {
                 resetError.style.color = "red";
