@@ -5,14 +5,13 @@ import messages from "../messages/lang/en.js";
  * Function to check if the JWT is expired
  * @return {boolean} True if the token is expired, false otherwise
  */
-
 function isTokenExpired(){
     const token = getToken();
     if(!token){
         return true;
     }
     try{
-        const {exp} = jwtDecode(token); // decond token to get the expiration time
+        const {exp} = jwtDecode(token); // decode token to get the expiration time
         console.log("date time now: ", Date.now());
         console.log("expiration time: ", exp );
         const res = Date.now() >= exp*1000; // check if the token is expired
@@ -24,6 +23,49 @@ function isTokenExpired(){
     }
 }
 
+/**
+ * Function to check if the user has the correct role, if not redirect to login
+ * @return {boolean} True if the user has correct role, redirects otherwise
+ */
+function checkUserAccess() {
+    const token = getToken();
+    if (!token) {
+        localStorage.clear();
+        window.location.href = "../index.html";
+        return false;
+    }
+    
+    try {
+        const decoded = jwtDecode(token);
+        if (!decoded.email) {
+            alert(messages.unauthorized || "Session expired. Please log in again.");
+            localStorage.clear();
+            window.location.href = "../index.html";
+            return false;
+        }
+        
+        // If user is an admin and trying to access user page, that's okay
+        // But if admin tries to specifically check this, redirect to admin page
+        if (decoded.role === "admin" && window.location.pathname.includes('user.html') && 
+            !sessionStorage.getItem('viewing_as_user')) {
+            if (confirm("You are logged in as an admin. Would you like to go to the admin page?")) {
+                window.location.href = "admin.html";
+                return false;
+            } else {
+                // Allow admin to view user page but mark that they chose to stay
+                sessionStorage.setItem('viewing_as_user', 'true');
+            }
+        }
+        
+        return true;
+    } catch (error) {
+        console.error("Error checking user access:", error);
+        localStorage.clear();
+        window.location.href = "../index.html";
+        return false;
+    }
+}
+
 function checkTokenAndRedirect(){
     // Check if the token is expired
     if(isTokenExpired()){
@@ -31,8 +73,15 @@ function checkTokenAndRedirect(){
         localStorage.clear();
         // will reload the page and redirect to the login page
         window.location.href = "../index.html";
+        return;
+    }
+    
+    // Check if user has correct access
+    if (!checkUserAccess()) {
+        return;
     }
 }
+
 /**
  * Function to get the JWT token from localStorage
  * @return {string | null} The token if it exists, null otherwise
@@ -78,11 +127,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         return;
     }
     
-    // if (!email) {
-    //     window.location.href = "../index.html";
-    //     return;
-    // }
-    
     userEmailElement.textContent = email;
 
     // Get user API count
@@ -98,7 +142,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         if (response.ok) {
             apiCountElement.textContent = data.apiCount || 0;
         } else {
-            aapiCountElement.textContent = messages.apiCountError;
+            apiCountElement.textContent = messages.apiCountError;
             console.error(messages.apiCountError, data.message);            
         }
     } catch (error) {
@@ -171,7 +215,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             setStatusMessage(messages.registeringFace, "info");
     
             try {
-                const response = await fetch("   https://9fd2-2001-569-598c-9500-1d72-ae0b-6e7d-b7.ngrok-free.app/register-face", {
+                const response = await fetch("https://9fd2-2001-569-598c-9500-1d72-ae0b-6e7d-b7.ngrok-free.app/register-face", {
                     method: "POST",
                     body: formData
                 });
@@ -203,9 +247,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
     
     function logout() {
-        // Clear session storage
-        sessionStorage.removeItem("email");
-        sessionStorage.removeItem("role");
+        // Clear all storage
+        localStorage.clear();
+        sessionStorage.clear();
         
         // Redirect to login page
         window.location.href = "../index.html";
@@ -233,4 +277,3 @@ document.addEventListener("DOMContentLoaded", async function () {
             }
         }
 });
-

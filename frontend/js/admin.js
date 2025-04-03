@@ -7,14 +7,13 @@ import messages from "../messages/lang/en.js";
  * Function to check if the JWT is expired
  * @return {boolean} True if the token is expired, false otherwise
  */
-
 function isTokenExpired(){
     const token = getToken();
     if(!token){
         return true;
     }
     try{
-        const {exp} = jwtDecode(token); // decond token to get the expiration time
+        const {exp} = jwtDecode(token); // decode token to get the expiration time
         console.log("date time now: ", Date.now());
         console.log("expiration time: ", exp );
         const res = Date.now() >= exp*1000; // check if the token is expired
@@ -26,15 +25,6 @@ function isTokenExpired(){
     }
 }
 
-function checkTokenAndRedirect(){
-    // Check if the token is expired
-    if(isTokenExpired()){
-        console.log("enter checks")
-        localStorage.clear();
-        // will reload the page and redirect to the login page
-        window.location.href = "../index.html";
-    }
-}
 /**
  * Function to get the JWT token from localStorage
  * @return {string | null} The token if it exists, null otherwise
@@ -43,10 +33,57 @@ function getToken(){
     return localStorage.getItem('token');
 }
 
+/**
+ * Function to check if the user is an admin, if not redirect to login
+ * @return {boolean} True if the user is admin, redirects otherwise
+ */
+function checkAdminAccess() {
+    const token = getToken();
+    if (!token) {
+        localStorage.clear();
+        window.location.href = "../index.html";
+        return false;
+    }
+    
+    try {
+        const decoded = jwtDecode(token);
+        if (!decoded.email || decoded.role !== "admin") {
+            // User is not an admin, show alert and redirect
+            alert(messages.unauthorizedAdmin || "Unauthorized access. This page is for admins only.");
+            localStorage.clear();
+            window.location.href = "../index.html";
+            return false;
+        }
+        return true;
+    } catch (error) {
+        console.error("Error checking admin access:", error);
+        localStorage.clear();
+        window.location.href = "../index.html";
+        return false;
+    }
+}
+
+function checkTokenAndRedirect(){
+    // Check if the token is expired
+    if(isTokenExpired()){
+        console.log("Token expired, redirecting to login")
+        localStorage.clear();
+        // will reload the page and redirect to the login page
+        window.location.href = "../index.html";
+        return;
+    }
+    
+    // Check if user has admin access
+    if (!checkAdminAccess()) {
+        return;
+    }
+}
 
 document.addEventListener("DOMContentLoaded", async function () {
-    checkTokenAndRedirect(); // Check if the token is expired and redirect if necessary
-
+    // First check token expiry and admin role
+    checkTokenAndRedirect();
+    
+    // Rest of your admin.js code remains the same
     // DOM Elements
     const statsTable = document.getElementById("stats-table");
     const statsBody = document.getElementById("stats-body");
@@ -114,7 +151,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         return;
     }
 
-
     // Event Listeners
     showStatsBtn.addEventListener("click", fetchAllStats);
     refreshApiStatsBtn.addEventListener("click", fetchAndDisplayApiStats); // Add this event listener
@@ -126,7 +162,9 @@ document.addEventListener("DOMContentLoaded", async function () {
     // Initial data load
     fetchAllStats(); // Load user stats initially
     
-    // Update the fetchAllStats function
+    // The rest of the admin.js functions remain the same...
+    // (fetchAllStats, fetchAndDisplayUserStats, fetchAndDisplayApiStats, startWebcam, stopWebcam, captureAndCheckAttendance, logout)
+    
     async function fetchAllStats() {
         showStatsBtn.disabled = true;
         try {
@@ -230,7 +268,6 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
     }
     
-    // Keep existing functions
     async function startWebcam() {
         try {
             // Check if camera is already running
@@ -296,7 +333,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             attendanceResults.innerHTML = ''; // Clear previous results
 
             try {
-                const response = await fetch("   https://9fd2-2001-569-598c-9500-1d72-ae0b-6e7d-b7.ngrok-free.app/verify-face", {
+                const response = await fetch("https://9fd2-2001-569-598c-9500-1d72-ae0b-6e7d-b7.ngrok-free.app/verify-face", {
                     method: "POST",
                     body: formData,
                 });

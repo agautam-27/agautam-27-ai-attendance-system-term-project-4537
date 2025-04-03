@@ -133,6 +133,7 @@ app.post("/register", async (req, res) => {
     }
 });
 
+
 app.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -160,8 +161,15 @@ app.post("/login", async (req, res) => {
             apiCount: admin.firestore.FieldValue.increment(1)
         });
 
-        // Token expiration time (keep the team's 300s setting)
-        const token = jwt.sign({email: email}, JWT_SECRET, {expiresIn: '300s'});
+        // Include user role in the JWT token
+        const token = jwt.sign(
+            { 
+                email: email, 
+                role: userData.role 
+            }, 
+            JWT_SECRET, 
+            { expiresIn: '300s' }
+        );
         
         res.status(200).json({
             token: token,
@@ -179,7 +187,6 @@ app.post("/login", async (req, res) => {
         res.status(500).json({ message: messages.errorLoggingIn });
     }
 });
-
 
 app.get("/dashboard", checkAuth, async (req, res) => {
     try {
