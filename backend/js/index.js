@@ -321,7 +321,8 @@ app.post("/request-password-reset", async (req, res) => {
     // const resetLink = `https://face-detection-attendance4537.netlify.app//frontend/pages/resetpassword.html?token=${token}&email=${email}`;
     // const resetLink = `https://face-detection-attendance4537.netlify.app/frontend/pages/resetpassword.html?token=${token}&email=${email}`;
     // const resetLink = `https://face-detection-attendance4537.netlify.app/frontend/pages/resetpassword.html?token=${token}&email=${email}`;
-    const resetLink = `https://face-detection-attendance4537.netlify.app/pages/resetpassword.html?token=${token}&email=${email}`;
+    // const resetLink = `https://face-detection-attendance4537.netlify.app/pages/resetpassword.html?token=${token}&email=${email}`;
+    const resetLink = `https://face-detection-attendance4537.netlify.app/frontend/pages/resetpassword.html?token=${token}&email=${email}`;
     
 
     console.log("RESET LINK (Send via email):", resetLink);
