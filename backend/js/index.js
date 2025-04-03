@@ -327,7 +327,7 @@ app.post("/request-password-reset", async (req, res) => {
         console.log("Token saved successfully");
 
         // Generate reset link - UPDATED WITH FRONTEND PATH
-        const resetLink = `https://face-detection-attendance4537.netlify.app/frontend/pages/resetpassword.html?token=${token}&email=${email}`;
+        const resetLink = `https://face-detection-attendance4537.netlify.app/pages/resetpassword.html?token=${token}&email=${email}`;
         console.log("Reset link generated:", resetLink);
 
         // Send email
