@@ -346,7 +346,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             attendanceResults.innerHTML = ''; // Clear previous results
 
             try {
-                const response = await fetch("   https://9fd2-2001-569-598c-9500-1d72-ae0b-6e7d-b7.ngrok-free.app/verify-face", {
+                const response = await fetch("https://79ba-142-232-152-21.ngrok-free.app/verify-face", {
                     method: "POST",
                     body: formData,
                 });
