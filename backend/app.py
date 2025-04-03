@@ -37,8 +37,8 @@ swagger = Swagger(app, config=swagger_config)
 model = YOLO("yolov8n.pt")  
 
 # Initialize Firebase
-cred = credentials.Certificate("serviceAccountKey.json") #keep this line uncomment when want to push changes
-# cred = credentials.Certificate("database/serviceAccountKey.json") #keep this comment only , only uncomment when testing local host
+# cred = credentials.Certificate("serviceAccountKey.json") #keep this line uncomment when want to push changes
+cred = credentials.Certificate("database/serviceAccountKey.json") #keep this comment only , only uncomment when testing local host
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
